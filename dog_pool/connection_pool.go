@@ -17,7 +17,7 @@ type ConnectionPoolWrapper struct {
 //
 // Create a new instance of the Pool and initialize it with N-many connections
 //
-func NewPool(size int, initfn InitFunction) (*ConnectionPoolWrapper, error) {
+func MakeConnectionPoolWrapper(size int, initfn InitFunction) (*ConnectionPoolWrapper, error) {
 	// Create a buffered channel allowing size senders
 	output := &ConnectionPoolWrapper{}
 	output.size = size

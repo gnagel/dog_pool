@@ -65,7 +65,7 @@ func (p *RedisConnectionPool) Open() error {
 	}
 
 	// Create the new pool
-	pool, err := NewPool(p.Size, initfn)
+	pool, err := MakeConnectionPoolWrapper(p.Size, initfn)
 
 	// Error creating the pool?
 	if nil != err {

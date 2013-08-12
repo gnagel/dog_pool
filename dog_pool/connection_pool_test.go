@@ -13,7 +13,7 @@ type stringWrapper struct {
 func Test_ConnectionPool_GetConnection_1(t *testing.T) {
 	tag := "GetConnection - Nil Input, Nil Output"
 
-	pool, _ := NewPool(1, func() (interface{}, error) {
+	pool, _ := MakeConnectionPoolWrapper(1, func() (interface{}, error) {
 		return nil, nil
 	})
 
@@ -35,7 +35,7 @@ func Test_ConnectionPool_GetConnection_2(t *testing.T) {
 
 	expected := &stringWrapper{Value: "Hello"}
 
-	pool, _ := NewPool(1, func() (interface{}, error) {
+	pool, _ := MakeConnectionPoolWrapper(1, func() (interface{}, error) {
 		return expected, nil
 	})
 
@@ -59,7 +59,7 @@ func Test_ConnectionPool_GetConnection_2(t *testing.T) {
 func Test_ConnectionPool_ReleaseConnection_1(t *testing.T) {
 	tag := "ReleaseConnection - Nil Input, Nil Output"
 
-	pool, _ := NewPool(1, func() (interface{}, error) {
+	pool, _ := MakeConnectionPoolWrapper(1, func() (interface{}, error) {
 		return nil, nil
 	})
 
@@ -80,7 +80,7 @@ func Test_ConnectionPool_ReleaseConnection_2(t *testing.T) {
 
 	expected := &stringWrapper{Value: "Hello"}
 
-	pool, _ := NewPool(1, func() (interface{}, error) {
+	pool, _ := MakeConnectionPoolWrapper(1, func() (interface{}, error) {
 		return expected, nil
 	})
 
