@@ -20,7 +20,7 @@ Install
 GO Usage
 ========
 
-	import "github.com/gnagel/dog_pool"
+	import "github.com/gnagel/dog_pool/dog_pool"
 	import redis "github.com/fzzy/radix/redis"
 
 	// Setup the pool
