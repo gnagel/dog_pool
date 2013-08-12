@@ -14,13 +14,13 @@ Future support:
 Install
 =======
 
-	go get -u "github.com/gnagel/dog_pool"
+	go get -u "github.com/gnagel/dog_pool/dog_pool"
 
 
 GO Usage
 ========
 
-	import "github.com/gnagel/dog_pool"
+	import "github.com/gnagel/dog_pool/dog_pool"
 	import redis "github.com/fzzy/radix/redis"
 
 	// Setup the pool
