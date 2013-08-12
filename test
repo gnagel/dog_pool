@@ -1,0 +1,48 @@
+#!/bin/sh
+
+export GOPATH=$PWD/
+export GOMAXPROCS=1
+
+
+# Abort on errors after this point ...
+set -e
+
+
+echo ""
+echo ".................................................................."
+echo "Installing dependencies .........................................."
+echo ".................................................................."
+echo ""
+
+go get -u "github.com/fzzy/radix/redis"
+go get -u "github.com/alecthomas/log4go"
+go get -u "github.com/jessevdk/go-flags"
+go get -u "github.com/bradfitz/gomemcache/memcache"
+go get -u "github.com/jteeuwen/go-bindata"
+
+echo ""
+echo ".................................................................."
+echo "Formatting the code .............................................."
+echo ".................................................................."
+gofmt -s -w $GOPATH
+echo ""
+
+# Run the tests
+# This will run the "all_spec_test.go" suite of tests
+echo ""
+echo ".................................................................."
+echo "Running tests ...................................................."
+echo ".................................................................."
+echo ""
+
+
+# 
+# Run the tests
+# 
+go test -v ./dog_pool/...
+
+echo ""
+echo ".................................................................."
+echo "Finished tests ..................................................."
+echo ".................................................................."
+echo ""
