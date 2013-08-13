@@ -92,7 +92,7 @@ func (p *RedisConnectionPool) Close() {
 
 			// Close the connection
 			if nil != c {
-				c.Close(nil)
+				c.Close()
 			}
 		}
 	}

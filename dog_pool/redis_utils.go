@@ -35,7 +35,7 @@ func makeAgressiveConnection(url string, logger *log4go.Logger) (*RedisConnectio
 	// Ping the server
 	if err := p.Ping(); nil != err {
 		// Close the connection
-		p.Close(err)
+		p.Close()
 
 		// Return the error
 		return nil, err

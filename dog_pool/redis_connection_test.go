@@ -19,7 +19,7 @@ func Test_RedisConnection_NewConnection_IsNotOpen(t *testing.T) {
 
 	// Create a connection, but don't actually connect to redis yet ...
 	connection := RedisConnection{Url: "127.0.0.1:6999", Logger: &redis_connection_logger}
-	defer connection.Close(nil)
+	defer connection.Close()
 
 	// We shouldn't be connected
 	if closed := connection.IsClosed(); closed != true {
@@ -36,7 +36,7 @@ func Test_RedisConnection_BadConnection_HasErrors(t *testing.T) {
 
 	// Create a connection, but don't actually connect to redis yet ...
 	connection := RedisConnection{Url: "127.0.0.1:6999", Logger: &redis_connection_logger}
-	defer connection.Close(nil)
+	defer connection.Close()
 
 	// Expected to fail
 	if err := connection.Open(); nil == err {
@@ -68,7 +68,7 @@ func Test_RedisConnection_GoodConnection_NoErrors(t *testing.T) {
 
 	// Connect to the actual redis server
 	connection := RedisConnection{Url: "127.0.0.1:6999", Logger: &redis_connection_logger}
-	defer connection.Close(nil)
+	defer connection.Close()
 
 	// Expected to succeed
 	if err := connection.Open(); nil != err {
@@ -106,7 +106,7 @@ func Test_RedisConnection_Client_AutomaticallyReconnects(t *testing.T) {
 
 	// Connect to the actual redis server
 	connection := RedisConnection{Url: "127.0.0.1:6999", Logger: &redis_connection_logger}
-	defer connection.Close(nil)
+	defer connection.Close()
 
 	// Expected to succeed
 	if err := connection.Open(); nil != err {
@@ -121,7 +121,7 @@ func Test_RedisConnection_Client_AutomaticallyReconnects(t *testing.T) {
 	}
 
 	// Disconnect from Redis
-	connection.Close(nil)
+	connection.Close()
 
 	// We shouldn't be connected
 	if closed := connection.IsClosed(); closed != true {
