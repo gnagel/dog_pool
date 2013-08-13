@@ -33,6 +33,33 @@ type RedisConnectionPool struct {
 	myPool *ConnectionPoolWrapper "Connection Pool wrapper"
 }
 
+var ErrNoConnectionsAvailable = errors.New("No RedisConnection available")
+
+//
+// Is the pool open?
+//
+func (p *RedisConnectionPool) IsOpen() bool {
+	return nil != p.myPool
+}
+
+//
+// Is the pool closed?
+//
+func (p *RedisConnectionPool) IsClosed() bool {
+	return nil == p.myPool
+}
+
+//
+// Length of the pool
+// Returns -1 if the pool is not open
+//
+func (p *RedisConnectionPool) Len() int {
+	if p.IsOpen() {
+		return p.myPool.Len()
+	}
+	return -1
+}
+
 //
 // Open the connection pool
 //
@@ -85,6 +112,10 @@ func (p *RedisConnectionPool) Open() error {
 // Close the connection pool
 //
 func (p *RedisConnectionPool) Close() {
+	if p.IsClosed() {
+		return
+	}
+
 	// If the pool is not nil,
 	// Then close all the connections and release the pointer
 	if nil != p.myPool {
@@ -116,7 +147,7 @@ func (p *RedisConnectionPool) Pop() (*RedisConnection, error) {
 	}
 
 	// Return an error when all connections are exhausted
-	return nil, errors.New("No RedisConnection available")
+	return nil, ErrNoConnectionsAvailable
 }
 
 //
