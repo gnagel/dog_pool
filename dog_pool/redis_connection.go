@@ -26,6 +26,37 @@ type RedisConnection struct {
 }
 
 //
+// Lazily make a Redis Connection
+//
+func makeLazyRedisConnection(url string, id string, timeout time.Duration, logger *log4go.Logger) (*RedisConnection, error) {
+	// Create a new factory instance
+	p := &RedisConnection{Url: url, Id: id, Logger: logger, Timeout: timeout}
+
+	// Return the factory
+	return p, nil
+}
+
+//
+// Agressively make a Redis Connection
+//
+func makeAgressiveRedisConnection(url string, id string, timeout time.Duration, logger *log4go.Logger) (*RedisConnection, error) {
+	// Create a new factory instance
+	p, _ := makeLazyRedisConnection(url, id, timeout, logger)
+
+	// Ping the server
+	if err := p.Ping(); nil != err {
+		// Close the connection
+		p.Close()
+
+		// Return the error
+		return nil, err
+	}
+
+	// Return the factory
+	return p, nil
+}
+
+//
 //  ========================================
 //
 // RedisClientInterface -and- redis.Client implementation:

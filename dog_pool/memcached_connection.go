@@ -28,6 +28,37 @@ type MemcachedConnection struct {
 	client *memcached.Client "Connection to a Memcached, may be nil"
 }
 
+//
+// Lazily make a Redis Connection
+//
+func makeLazyMemcachedConnection(url string, id string, timeout time.Duration, logger *log4go.Logger) (*MemcachedConnection, error) {
+	// Create a new factory instance
+	p := &MemcachedConnection{Url: url, Id: id, Logger: logger, Timeout: timeout}
+
+	// Return the factory
+	return p, nil
+}
+
+//
+// Agressively make a Memcached Connection
+//
+func makeAgressiveMemcachedConnection(url string, id string, timeout time.Duration, logger *log4go.Logger) (*MemcachedConnection, error) {
+	// Create a new factory instance
+	p, _ := makeLazyMemcachedConnection(url, id, timeout, logger)
+
+	// Ping the server
+	if err := p.Ping(); nil != err {
+		// Close the connection
+		p.Close()
+
+		// Return the error
+		return nil, err
+	}
+
+	// Return the factory
+	return p, nil
+}
+
 func (p *MemcachedConnection) recoverPanic(cmd string, keys []string) error {
 	r := recover()
 
@@ -345,7 +376,7 @@ func (p *MemcachedConnection) Decrement(key string, delta uint64) (newValue uint
 //
 func (p *MemcachedConnection) Ping() error {
 	item := &memcached.Item{}
-	item.Key = fmt.Sprintf("ping-%s-%s", p.Url, p.Id)
+	item.Key = fmt.Sprintf("%s-%s-ping", p.Url, p.Id)
 	item.Value = bytes.NewBufferString("1").Bytes()
 	item.Expiration = int32(1) // Seconds
 
@@ -389,7 +420,11 @@ func (p *MemcachedConnection) Open() error {
 	p.Logger.Info("[MemcachedConnection][Open][%s/%s] --> Opened!", p.Url, p.Id)
 
 	// Perform a basic command on the server
-	err := p.Ping()
+	item := &memcached.Item{}
+	item.Key = fmt.Sprintf("%s-%s-opened", p.Url, p.Id)
+	item.Value = bytes.NewBufferString("1").Bytes()
+	item.Expiration = int32(1) // Seconds
+	err := p.Set(item)
 
 	// Check for errors
 	if nil != err {

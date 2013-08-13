@@ -6,17 +6,19 @@ package dog_pool
 
 import "fmt"
 import "errors"
+import "time"
 import "github.com/alecthomas/log4go"
 
 //
 // Memcached Connection Pool wrapper
 //
 type MemcachedConnectionPool struct {
-	Mode   ConnectionMode         "How should we prepare the connection pool?"
-	Size   int                    "(Max) Pool size"
-	Urls   []string               "Memcached URLs to connect to"
-	Logger log4go.Logger          "Logger we are using in the connection pool"
-	myPool *ConnectionPoolWrapper "Connection Pool wrapper"
+	Mode    ConnectionMode         "How should we prepare the connection pool?"
+	Size    int                    "(Max) Pool size"
+	Urls    []string               "Memcached URLs to connect to"
+	Logger  log4go.Logger          "Logger we are using in the connection pool"
+	Timeout time.Duration          "Timeout to use for Memcached Connections"
+	myPool  *ConnectionPoolWrapper "Connection Pool wrapper"
 }
 
 //
@@ -50,6 +52,11 @@ func (p *MemcachedConnectionPool) Len() int {
 func (p *MemcachedConnectionPool) Open() error {
 	p.Close()
 
+	// Default to 15s timeout
+	if time.Duration(0) == p.Timeout {
+		p.Timeout = time.Duration(15) * time.Second
+	}
+
 	// Lambda to iterate the urls
 	nextUrl := loopStrings(p.Urls)
 
@@ -62,7 +69,7 @@ func (p *MemcachedConnectionPool) Open() error {
 		// DON'T Test the connection
 		initfn = func() (interface{}, error) {
 			values := nextUrl()
-			return makeLazyConnection(values[0], values[1], &p.Logger)
+			return makeLazyMemcachedConnection(values[0], values[1], p.Timeout, &p.Logger)
 		}
 	case AGRESSIVE:
 		// Create the factory
@@ -70,7 +77,7 @@ func (p *MemcachedConnectionPool) Open() error {
 		// AND Test the connection
 		initfn = func() (interface{}, error) {
 			values := nextUrl()
-			return makeAgressiveConnection(values[0], values[1], &p.Logger)
+			return makeAgressiveMemcachedConnection(values[0], values[1], p.Timeout, &p.Logger)
 		}
 		// No mode specified!
 	default:
