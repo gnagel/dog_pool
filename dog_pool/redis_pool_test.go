@@ -14,7 +14,7 @@ func TestRedisPoolSpecs(t *testing.T) {
 
 // Helpers
 func RedisPoolSpecs(c gospec.Context) {
-	var redis_pool_logger = log4go.NewDefaultLogger(log4go.FINEST)
+	var redis_pool_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
 
 	c.Specify("[RedisConnectionPool] New Pool is not open", func() {
 		pool := RedisConnectionPool{Mode: AGRESSIVE, Size: 0, Urls: []string{}, Logger: redis_pool_logger}
