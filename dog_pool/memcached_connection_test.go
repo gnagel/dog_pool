@@ -18,7 +18,7 @@ func TestMemcachedConnectionSpecs(t *testing.T) {
 
 // Helpers
 func MemcachedConnectionSpecs(c gospec.Context) {
-	var memcached_connection_logger = log4go.NewDefaultLogger(log4go.FINEST)
+	var memcached_connection_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
 
 	c.Specify("[MemcachedConnection] New connection is not open", func() {
 		connection := MemcachedConnection{Url: "127.0.0.1:11290", Logger: &memcached_connection_logger}
@@ -125,6 +125,7 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 		// Defer the evaluation of cmd
 		defer func() { cmd.Wait() }()
 		defer func() { cmd.Process.Kill() }()
+		memcached_connection_logger.Error("Started the server")
 
 		// Starts off closed ...
 		c.Expect(connection.IsClosed(), gospec.Equals, true)
@@ -138,6 +139,8 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 		// Kill the server
 		cmd.Process.Kill()
 		cmd.Wait()
+		time.Sleep(time.Duration(1) * time.Second)
+		memcached_connection_logger.Error("Killed the server")
 
 		// Ping the server again
 		// Should return an error and now be closed
@@ -146,7 +149,7 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 		c.Expect(connection.IsClosed(), gospec.Equals, true)
 
 		// Re-Start the server ...
-		cmd = exec.Command("memcached", "--port", "11294")
+		cmd = exec.Command("memcached", "-p", "11294")
 		err = cmd.Start()
 		c.Expect(err, gospec.Equals, nil)
 		if err != nil {
@@ -154,6 +157,7 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 			return
 		}
 		time.Sleep(time.Duration(1) * time.Second)
+		memcached_connection_logger.Error("Restarted the server")
 
 		// Ping the server
 		// Should now be open

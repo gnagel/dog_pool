@@ -36,7 +36,7 @@ func (p *MemcachedConnection) recoverPanic(cmd string, keys []string) error {
 	}
 
 	// Panic error
-	p.Logger.Critical("[MemcachedConnection][%s][%s/%s] Memcached Keys = '%s' --> Panic Error = '%v'", cmd, p.Url, p.Id, strings.Join(keys, ","), r)
+	p.Logger.Critical("[MemcachedConnection][%s][%s/%s] Memcached Keys = '%s' --> Panic Error = '%v'", cmd, p.Url, p.Id, strings.Join(keys, ", "), r)
 
 	// Close the connection
 	p.Close()
@@ -175,11 +175,11 @@ func (p *MemcachedConnection) Set(item *memcached.Item) (err error) {
 	delta := bytes.NewBuffer(item.Value).String()
 	switch err {
 	case nil:
-		p.Logger.Info("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v' --> Set Value!", p.Url, p.Id, key, delta)
+		p.Logger.Info("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v', Expires = %d(s) --> Set Value!", p.Url, p.Id, key, delta, item.Expiration)
 	case memcached.ErrNotStored:
-		p.Logger.Info("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v' --> Not Stored = '%v'", p.Url, p.Id, key, delta, err)
+		p.Logger.Info("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v', Expires = %d(s) --> Not Stored = '%v'", p.Url, p.Id, key, delta, item.Expiration, err)
 	default:
-		p.Logger.Error("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v' --> Fatal Error = '%v'", p.Url, p.Id, key, delta, err)
+		p.Logger.Error("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v', Expires = %d(s) --> Fatal Error = '%v'", p.Url, p.Id, key, delta, item.Expiration, err)
 		p.Close()
 	}
 
@@ -345,9 +345,9 @@ func (p *MemcachedConnection) Decrement(key string, delta uint64) (newValue uint
 //
 func (p *MemcachedConnection) Ping() error {
 	item := &memcached.Item{}
-	item.Key = fmt.Sprintf("ping-%s-%s-%d", p.Url, p.Id, time.Now().UTC().Second())
+	item.Key = fmt.Sprintf("ping-%s-%s", p.Url, p.Id)
 	item.Value = bytes.NewBufferString("1").Bytes()
-	item.Expiration = int32(time.Duration(1) * time.Second)
+	item.Expiration = int32(1) // Seconds
 
 	return p.Set(item)
 }
