@@ -19,6 +19,7 @@ go get -u "github.com/alecthomas/log4go"
 go get -u "github.com/jessevdk/go-flags"
 go get -u "github.com/bradfitz/gomemcache/memcache"
 go get -u "github.com/jteeuwen/go-bindata"
+go get -u "github.com/orfjackal/gospec/src/gospec"
 
 echo ""
 echo ".................................................................."

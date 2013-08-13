@@ -4,6 +4,8 @@
 
 package dog_pool
 
+import "fmt"
+import "strings"
 import "errors"
 import "time"
 import "github.com/fzzy/radix/redis"
@@ -15,12 +17,9 @@ import "github.com/alecthomas/log4go"
 var ErrConnectionIsClosed = errors.New("Connection is closed, command aborted")
 
 const timeout = time.Duration(10) * time.Second
-const log_client_has_saved_connection = "[RedisConnection][Client] - %s saved available for Url=%s"
-const log_ping_reply = "[RedisConnection][Ping] %s for Url=%s, Redis Reply = %#v"
-const log_open_failed = "[RedisConnection][Open] - Failed to connect to %s, error = %#v"
-const log_open_success = "[RedisConnection][Open] - Opened new connection to %s"
+const log_client_has_saved_connection = "[RedisConnection][Client] - %s saved available for Url = %s"
+const log_ping_reply = "[RedisConnection][Ping] %s for Url = %s, Redis Reply = %#v"
 const log_closed = "[RedisConnection][Close] - Closed connection to %s"
-const log_append_not_open = "[RedisConnection][Append] Append Ignored for cmd = %s, error = %#v"
 const log_get_reply = "[RedisConnection][GetReply] Redis Reply = %#v"
 const log_get_reply_error = "[RedisConnection][GetReply] Response Error = %v"
 
@@ -30,26 +29,25 @@ const log_get_reply_error = "[RedisConnection][GetReply] Response Error = %v"
 type RedisConnection struct {
 	Url string "Redis URL this factory will connect to"
 
+	Id string "(optional) Identifier for distingushing between redis connections"
+
 	Logger *log4go.Logger "Handle to the logger we are using"
 
 	client *redis.Client "Connection to a Redis, may be nil"
 }
 
 //
-// ========================================
+//  ========================================
 //
 // RedisClientInterface -and- redis.Client implementation:
 //
-// ========================================
+//  ========================================
 //
 
 //
 // Close closes the connection.
 //
 func (p *RedisConnection) Close() (err error) {
-	// Log the event
-	p.Logger.Debug(log_closed, p.Url)
-
 	// Close the connection
 	if nil != p.client {
 		err = p.client.Close()
@@ -57,6 +55,9 @@ func (p *RedisConnection) Close() (err error) {
 
 	// Set the pointer to nil
 	p.client = nil
+
+	// Log the event
+	p.Logger.Debug("[RedisConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
 
 	return
 }
@@ -76,11 +77,24 @@ func (p *RedisConnection) Cmd(cmd string, args ...interface{}) *redis.Reply {
 // Use GetReply() to read the reply.
 //
 func (p *RedisConnection) Append(cmd string, args ...interface{}) {
+	args_to_s := func() string {
+		return fmt.Sprintf(strings.Repeat("%v ", len(args)), args...)
+	}
+
+	// Wrap in a lambda to prevent evaulation, unless logging is enabled ...
+	p.Logger.Trace(func() string {
+		args_s := args_to_s()
+		return fmt.Sprintf("[RedisConnection][Append][%s/%s] Redis Command = '%s %s'", p.Url, p.Id, cmd, args_s)
+	})
+
 	// If the connection is not open, then open it
 	if !p.IsOpen() {
 		// Did opening the connection fail?
 		if err := p.Open(); nil != err {
-			p.Logger.Warn(log_append_not_open, cmd, err)
+			p.Logger.Warn(func() string {
+				args_s := args_to_s()
+				return fmt.Sprintf("[RedisConnection][Append][%s/%s] Redis Command = '%s %s' --> Error = %v", p.Url, p.Id, cmd, args_s, err)
+			})
 			return
 		}
 	}
@@ -103,9 +117,6 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 	// Get the reply from redis
 	reply := p.client.GetReply()
 
-	// Log the response
-	p.Logger.Trace(log_get_reply, reply)
-
 	// If the connection
 	if reply.Type == redis.ErrorReply {
 		//* Common errors
@@ -118,15 +129,18 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 			fallthrough
 		case redis.PipelineQueueEmptyError.Error():
 			// Log the error & break
-			p.Logger.Warn(log_get_reply_error, reply.Err.Error())
+			p.Logger.Warn("[RedisConnection][GetReply][%s/%s] Reply Error = %v", p.Url, p.Id, reply.Err)
 			break
 
 		default:
 			// All other errors are fatal!
 			// Close the connection and log the error
-			p.Logger.Critical(log_get_reply_error, reply.Err.Error())
+			p.Logger.Critical("[RedisConnection][GetReply][%s/%s] Fatal Reply Error = %v", p.Url, p.Id, reply.Err)
 			p.Close()
 		}
+	} else {
+		// Log the response
+		p.Logger.Trace("[RedisConnection][GetReply][%s/%s] Reply.Type = %d, Reply.Value = %v", p.Url, p.Id, reply.Type, reply.String())
 	}
 
 	// Return the reply from redis to the caller
@@ -134,27 +148,27 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 }
 
 //
-// ========================================
+//  ========================================
 //
 // RedisConnection implementation:
 //
-// ========================================
+//  ========================================
 //
 
 //
 // [Depricated, use Append/GetReply above instead]
-// 
+//
 // Get a connection to Redis
-// 
+//
 func (p *RedisConnection) Client() (*redis.Client, error) {
 	// Is a saved connection available?
 	if p.IsOpen() {
-		p.Logger.Trace(log_client_has_saved_connection, "Has", p.Url)
+		p.Logger.Trace(log_client_has_saved_connection, "Has", p.Url, p.Id)
 
 		// Return the connection
 		return p.client, nil
 	} else {
-		p.Logger.Warn(log_client_has_saved_connection, "No", p.Url)
+		p.Logger.Warn(log_client_has_saved_connection, "No", p.Url, p.Id)
 	}
 
 	// Open a new connection to redis
@@ -174,64 +188,55 @@ func (p *RedisConnection) Client() (*redis.Client, error) {
 //   error --> Ping was failure
 //
 func (p *RedisConnection) Ping() error {
-	// Open the connection to Redis
-	client, err := p.Client()
-	if nil != err {
-		// Return the error
-		return err
-	}
-
-	// Ping the server & get the response
-	client.Append("ping")
-	reply := client.GetReply()
-
-	// Connection error? Then tell the factory to invalidate the Redis connection
-	if nil != reply.Err {
-		p.Logger.Error(log_ping_reply, "Error", p.Url, reply)
-
-		// Close the connection
-		p.Close()
-
-		// Return the error
-		return reply.Err
-	} else {
-		p.Logger.Trace(log_ping_reply, "Success", p.Url, reply)
-	}
-
-	// Return nil on Success!
-	return nil
+	return p.Cmd("ping").Err
 }
 
 //
 // Return true if the client connection exists
 //
 func (p *RedisConnection) IsOpen() bool {
-	return p.client != nil
+	output := nil != p.client
+
+	// Debug logging
+	p.Logger.Trace("[RedisConnection][IsOpen][%s/%s] --> %v", p.Url, p.Id, output)
+
+	return output
 }
 
 //
 // Return true if the client connection exists
 //
 func (p *RedisConnection) IsClosed() bool {
-	return !p.IsOpen()
+	output := nil == p.client
+
+	// Debug logging
+	p.Logger.Trace("[RedisConnection][IsClosed][%s/%s] --> %v", p.Url, p.Id, output)
+
+	return output
 }
 
 //
 // Open a new connection to redis
 //
-func (p *RedisConnection) Open() (err error) {
-	// Connect to Redis
-	p.client, err = redis.DialTimeout("tcp", p.Url, timeout)
+func (p *RedisConnection) Open() error {
+	// Open the TCP connection
+	client, err := redis.DialTimeout("tcp", p.Url, timeout)
 
-	// Error connecting?
+	// Check for errors
 	if nil != err {
-		// Clear the connection pointer
-		p.client = nil
+		// Log the event
+		p.Logger.Error("[RedisConnection][Open][%s/%s] --> Error = %v", p.Url, p.Id, err)
 
-		p.Logger.Error(log_open_failed, p.Url, err)
-	} else {
-		p.Logger.Trace(log_open_success, p.Url)
+		// Return the error
+		return err
 	}
 
-	return
+	// Save the client pointer
+	p.client = client
+
+	// Log the event
+	p.Logger.Info("[RedisConnection][Open][%s/%s] --> Opened!", p.Url, p.Id)
+
+	// Return nil
+	return nil
 }

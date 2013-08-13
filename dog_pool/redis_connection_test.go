@@ -1,143 +1,160 @@
 package dog_pool
 
-import "os"
 import "os/exec"
 import "time"
 import "testing"
+import "github.com/orfjackal/gospec/src/gospec"
 import "github.com/alecthomas/log4go"
 
-var redis_master = os.Getenv("REDIS_MASTER")
-var redis_connection_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
-
-const method_expected_a_equal_b_from_url = "[%s][%s] Expected '%v', Actual '%v'"
-
-//
-// New connections are not open
-//
-func Test_RedisConnection_NewConnection_IsNotOpen(t *testing.T) {
-	tag := "[RedisConnection][NewConnection IsNotOpen] Actual = %#v, Expected %#v"
-
-	// Create a connection, but don't actually connect to redis yet ...
-	connection := RedisConnection{Url: "127.0.0.1:6999", Logger: &redis_connection_logger}
-	defer connection.Close()
-
-	// We shouldn't be connected
-	if closed := connection.IsClosed(); closed != true {
-		t.Errorf(tag, closed, true)
-		return
-	}
+func TestRedisConnectionSpecs(t *testing.T) {
+	r := gospec.NewRunner()
+	r.AddSpec(RedisConnectionSpecs)
+	gospec.MainGoTest(r, t)
 }
 
-//
-// Connections to Non-existent Redis Servers should fail
-//
-func Test_RedisConnection_BadConnection_HasErrors(t *testing.T) {
-	tag := "[RedisConnection][BadConnection HasErrors] Actual = %#v, Expected %#v"
+// Helpers
+func RedisConnectionSpecs(c gospec.Context) {
+	var redis_connection_logger = log4go.NewDefaultLogger(log4go.FINEST)
 
-	// Create a connection, but don't actually connect to redis yet ...
-	connection := RedisConnection{Url: "127.0.0.1:6999", Logger: &redis_connection_logger}
-	defer connection.Close()
+	c.Specify("[RedisConnection] New connection is not open", func() {
+		connection := RedisConnection{Url: "127.0.0.1:6990", Logger: &redis_connection_logger}
+		defer connection.Close()
 
-	// Expected to fail
-	if err := connection.Open(); nil == err {
-		t.Errorf(tag, err, "!nil")
-		return
-	}
+		open := connection.IsOpen()
+		closed := connection.IsClosed()
 
-	// We shouldn't be connected
-	if closed := connection.IsClosed(); closed != true {
-		t.Errorf(tag, closed, true)
-		return
-	}
-}
+		// Should be opposite of each other:
+		c.Expect(open, gospec.Equals, false)
+		c.Expect(closed, gospec.Equals, true)
+		c.Expect(closed, gospec.Satisfies, open != closed)
+	})
 
-//
-// Connections to Non-existent Redis Servers should fail
-//
-func Test_RedisConnection_GoodConnection_NoErrors(t *testing.T) {
-	tag := "[RedisConnection][BadConnection HasErrors] Actual = %#v, Expected %#v"
+	c.Specify("[RedisConnection] Opening connection to Invalid Host/Port has errors", func() {
+		connection := RedisConnection{Url: "127.0.0.1:6991", Logger: &redis_connection_logger}
+		defer connection.Close()
 
-	cmd := exec.Command("redis-server", "--port", "6999")
-	if err := cmd.Start(); err != nil {
-		t.Logf("skipping test; couldn't find memcached")
-		return
-	}
-	time.Sleep(time.Duration(1) * time.Second)
-	defer cmd.Wait()
-	defer cmd.Process.Kill()
+		// The server is not running ...
+		// This should return an error
+		err := connection.Open()
+		c.Expect(err, gospec.Satisfies, err != nil)
 
-	// Connect to the actual redis server
-	connection := RedisConnection{Url: "127.0.0.1:6999", Logger: &redis_connection_logger}
-	defer connection.Close()
+		closed := connection.IsClosed()
+		c.Expect(closed, gospec.Equals, true)
+	})
 
-	// Expected to succeed
-	if err := connection.Open(); nil != err {
-		t.Errorf(tag, err, nil)
-		return
-	}
+	c.Specify("[RedisConnection] Opening connection to Valid Host/Port has no errors", func() {
+		connection := RedisConnection{Url: "127.0.0.1:6992", Logger: &redis_connection_logger}
+		defer connection.Close()
 
-	// We should be connected now
-	if open := connection.IsOpen(); open != true {
-		t.Errorf(tag, open, true)
-		return
-	}
+		// Start the server ...
+		cmd := exec.Command("redis-server", "--port", "6992")
+		err := cmd.Start()
+		c.Expect(err, gospec.Equals, nil)
+		if err != nil {
+			// Abort on errors
+			return
+		}
+		time.Sleep(time.Duration(1) * time.Second)
+		defer cmd.Wait()
+		defer cmd.Process.Kill()
 
-	// Expected to succeed
-	if err := connection.Ping(); nil != err {
-		t.Errorf(tag, err, nil)
-		return
-	}
-}
+		err = connection.Open()
+		c.Expect(err, gospec.Equals, nil)
 
-//
-// The "Client" method sould automatically re-connect if disconnected
-//
-func Test_RedisConnection_Client_AutomaticallyReconnects(t *testing.T) {
-	tag := "[RedisConnection]['Client' Reconnects to Redis] Actual = %#v, Expected %#v"
+		open := connection.IsOpen()
+		closed := connection.IsClosed()
+		c.Expect(open, gospec.Equals, true)
+		c.Expect(closed, gospec.Equals, false)
+		c.Expect(closed, gospec.Satisfies, open != closed)
+	})
 
-	cmd := exec.Command("redis-server", "--port", "6999")
-	if err := cmd.Start(); err != nil {
-		t.Logf("skipping test; couldn't find memcached")
-		return
-	}
-	time.Sleep(time.Duration(1) * time.Second)
-	defer cmd.Wait()
-	defer cmd.Process.Kill()
+	c.Specify("[RedisConnection] Ping (-->Cmd-->Append+GetReply) (re-)opens the connection automatically", func() {
+		connection := RedisConnection{Url: "127.0.0.1:6993", Logger: &redis_connection_logger}
+		defer connection.Close()
 
-	// Connect to the actual redis server
-	connection := RedisConnection{Url: "127.0.0.1:6999", Logger: &redis_connection_logger}
-	defer connection.Close()
+		// Start the server ...
+		cmd := exec.Command("redis-server", "--port", "6993")
+		err := cmd.Start()
+		c.Expect(err, gospec.Equals, nil)
+		if err != nil {
+			// Abort on errors
+			return
+		}
+		time.Sleep(time.Duration(1) * time.Second)
+		defer cmd.Wait()
+		defer cmd.Process.Kill()
 
-	// Expected to succeed
-	if err := connection.Open(); nil != err {
-		t.Errorf(tag, err, nil)
-		return
-	}
+		// Starts off closed ...
+		c.Expect(connection.IsClosed(), gospec.Equals, true)
 
-	// We should be connected now
-	if ok := connection.IsOpen(); !ok {
-		t.Errorf(tag, ok, true)
-		return
-	}
+		// Ping the server
+		// Should now be open
+		err = connection.Ping()
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(connection.IsOpen(), gospec.Equals, true)
 
-	// Disconnect from Redis
-	connection.Close()
+		// Close the connection
+		err = connection.Close()
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(connection.IsClosed(), gospec.Equals, true)
 
-	// We shouldn't be connected
-	if closed := connection.IsClosed(); closed != true {
-		t.Errorf(tag, closed, true)
-		return
-	}
+		// Ping the server again
+		// Should now be open again
+		err = connection.Ping()
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(connection.IsOpen(), gospec.Equals, true)
+	})
 
-	// Expected to succeed
-	if err := connection.Ping(); nil != err {
-		t.Errorf(tag, err, nil)
-		return
-	}
+	c.Specify("[RedisConnection] Ping to invalid Host/Port has errors", func() {
+		connection := RedisConnection{Url: "127.0.0.1:6994", Logger: &redis_connection_logger}
+		defer connection.Close()
 
-	// We should be connected again
-	if open := connection.IsOpen(); open != true {
-		t.Errorf(tag, open, true)
-		return
-	}
+		// Start the server ...
+		cmd := exec.Command("redis-server", "--port", "6994")
+		err := cmd.Start()
+		c.Expect(err, gospec.Equals, nil)
+		if err != nil {
+			// Abort on errors
+			return
+		}
+		time.Sleep(time.Duration(1) * time.Second)
+		// Defer the evaluation of cmd
+		defer func() { cmd.Wait() }()
+		defer func() { cmd.Process.Kill() }()
+
+		// Starts off closed ...
+		c.Expect(connection.IsClosed(), gospec.Equals, true)
+
+		// Ping the server
+		// Should now be open
+		err = connection.Ping()
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(connection.IsOpen(), gospec.Equals, true)
+
+		// Kill the server
+		cmd.Process.Kill()
+		cmd.Wait()
+
+		// Ping the server again
+		// Should return an error and now be closed
+		err = connection.Ping()
+		c.Expect(err, gospec.Satisfies, err != nil)
+		c.Expect(connection.IsClosed(), gospec.Equals, true)
+
+		// Re-Start the server ...
+		cmd = exec.Command("redis-server", "--port", "6994")
+		err = cmd.Start()
+		c.Expect(err, gospec.Equals, nil)
+		if err != nil {
+			// Abort on errors
+			return
+		}
+		time.Sleep(time.Duration(1) * time.Second)
+
+		// Ping the server
+		// Should now be open
+		err = connection.Ping()
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(connection.IsOpen(), gospec.Equals, true)
+	})
 }
