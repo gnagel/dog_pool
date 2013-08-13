@@ -6,6 +6,10 @@ import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
 import "github.com/alecthomas/log4go"
 
+//
+// NOTE: Use differient ports for each test!
+//       gospec runs the specs in parallel!
+//
 func TestRedisPoolSpecs(t *testing.T) {
 	r := gospec.NewRunner()
 	r.AddSpec(RedisPoolSpecs)

@@ -72,10 +72,10 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 		c.Expect(closed, gospec.Satisfies, open != closed)
 	})
 
-	c.Specify("[MemcachedConnection] Ping (-->Cmd-->Append+GetReply) (re-)opens the connection automatically", func() {
+	c.Specify("[MemcachedConnection] Ping (-->Set) (re-)opens the connection automatically", func() {
 		connection := MemcachedConnection{Url: "127.0.0.1:11293", Logger: &memcached_connection_logger}
 		defer connection.Close()
-	
+
 		// Start the server ...
 		cmd := exec.Command("memcached", "-p", "11293")
 		err := cmd.Start()
@@ -87,78 +87,78 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 		time.Sleep(time.Duration(1) * time.Second)
 		defer cmd.Wait()
 		defer cmd.Process.Kill()
-	
+
 		// Starts off closed ...
 		c.Expect(connection.IsClosed(), gospec.Equals, true)
-	
+
 		// Ping the server
 		// Should now be open
 		err = connection.Ping()
 		c.Expect(err, gospec.Equals, nil)
 		c.Expect(connection.IsOpen(), gospec.Equals, true)
-	
+
 		// Close the connection
 		err = connection.Close()
 		c.Expect(err, gospec.Equals, nil)
 		c.Expect(connection.IsClosed(), gospec.Equals, true)
-	
+
 		// Ping the server again
 		// Should now be open again
 		err = connection.Ping()
 		c.Expect(err, gospec.Equals, nil)
 		c.Expect(connection.IsOpen(), gospec.Equals, true)
 	})
-	
-	// c.Specify("[MemcachedConnection] Ping to invalid Host/Port has errors", func() {
-	// 	connection := MemcachedConnection{Url: "127.0.0.1:11294", Logger: &memcached_connection_logger}
-	// 	defer connection.Close()
-	//
-	// 	// Start the server ...
-	// 	cmd := exec.Command("memcached", "-p", "11294")
-	// 	err := cmd.Start()
-	// 	c.Expect(err, gospec.Equals, nil)
-	// 	if err != nil {
-	// 		// Abort on errors
-	// 		return
-	// 	}
-	// 	time.Sleep(time.Duration(1) * time.Second)
-	// 	// Defer the evaluation of cmd
-	// 	defer func() { cmd.Wait() }()
-	// 	defer func() { cmd.Process.Kill() }()
-	//
-	// 	// Starts off closed ...
-	// 	c.Expect(connection.IsClosed(), gospec.Equals, true)
-	//
-	// 	// Ping the server
-	// 	// Should now be open
-	// 	err = connection.Ping()
-	// 	c.Expect(err, gospec.Equals, nil)
-	// 	c.Expect(connection.IsOpen(), gospec.Equals, true)
-	//
-	// 	// Kill the server
-	// 	cmd.Process.Kill()
-	// 	cmd.Wait()
-	//
-	// 	// Ping the server again
-	// 	// Should return an error and now be closed
-	// 	err = connection.Ping()
-	// 	c.Expect(err, gospec.Satisfies, err != nil)
-	// 	c.Expect(connection.IsClosed(), gospec.Equals, true)
-	//
-	// 	// Re-Start the server ...
-	// 	cmd = exec.Command("memcached-server", "--port", "11294")
-	// 	err = cmd.Start()
-	// 	c.Expect(err, gospec.Equals, nil)
-	// 	if err != nil {
-	// 		// Abort on errors
-	// 		return
-	// 	}
-	// 	time.Sleep(time.Duration(1) * time.Second)
-	//
-	// 	// Ping the server
-	// 	// Should now be open
-	// 	err = connection.Ping()
-	// 	c.Expect(err, gospec.Equals, nil)
-	// 	c.Expect(connection.IsOpen(), gospec.Equals, true)
-	// })
+
+	c.Specify("[MemcachedConnection] Ping to invalid Host/Port has errors", func() {
+		connection := MemcachedConnection{Url: "127.0.0.1:11294", Logger: &memcached_connection_logger}
+		defer connection.Close()
+
+		// Start the server ...
+		cmd := exec.Command("memcached", "-p", "11294")
+		err := cmd.Start()
+		c.Expect(err, gospec.Equals, nil)
+		if err != nil {
+			// Abort on errors
+			return
+		}
+		time.Sleep(time.Duration(1) * time.Second)
+		// Defer the evaluation of cmd
+		defer func() { cmd.Wait() }()
+		defer func() { cmd.Process.Kill() }()
+
+		// Starts off closed ...
+		c.Expect(connection.IsClosed(), gospec.Equals, true)
+
+		// Ping the server
+		// Should now be open
+		err = connection.Ping()
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(connection.IsOpen(), gospec.Equals, true)
+
+		// Kill the server
+		cmd.Process.Kill()
+		cmd.Wait()
+
+		// Ping the server again
+		// Should return an error and now be closed
+		err = connection.Ping()
+		c.Expect(err, gospec.Satisfies, err != nil)
+		c.Expect(connection.IsClosed(), gospec.Equals, true)
+
+		// Re-Start the server ...
+		cmd = exec.Command("memcached", "--port", "11294")
+		err = cmd.Start()
+		c.Expect(err, gospec.Equals, nil)
+		if err != nil {
+			// Abort on errors
+			return
+		}
+		time.Sleep(time.Duration(1) * time.Second)
+
+		// Ping the server
+		// Should now be open
+		err = connection.Ping()
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(connection.IsOpen(), gospec.Equals, true)
+	})
 }
