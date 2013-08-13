@@ -1,5 +1,5 @@
-dog_pool
-========
+dog_pool: Distinct Object Gouping in a (Buffered Channel) Pool
+==============================================================
 
 Connection Pool wrappers written in GO.
 
