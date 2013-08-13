@@ -1,11 +1,10 @@
 package dog_pool
 
-// import "os/exec"
-// import "time"
+import "os/exec"
+import "time"
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
-
-// import "github.com/alecthomas/log4go"
+import "github.com/alecthomas/log4go"
 
 func TestMemcachedPoolSpecs(t *testing.T) {
 	r := gospec.NewRunner()
@@ -15,18 +14,18 @@ func TestMemcachedPoolSpecs(t *testing.T) {
 
 // Helpers
 func MemcachedPoolSpecs(c gospec.Context) {
-	// var memcached_pool_logger = log4go.NewDefaultLogger(log4go.FINEST)
-	//
-	// c.Specify("[MemcachedConnectionPool] New Pool is not open", func() {
-	// 	pool := MemcachedConnectionPool{Mode: AGRESSIVE, Size: 0, Urls: []string{}, Logger: memcached_pool_logger}
-	// 	defer pool.Close()
-	//
-	// 	c.Expect(pool.IsOpen(), gospec.Equals, false)
-	// 	c.Expect(pool.IsClosed(), gospec.Equals, true)
-	// 	c.Expect(pool.IsOpen(), gospec.Satisfies, pool.IsOpen() != pool.IsClosed())
-	// 	c.Expect(pool.Len(), gospec.Equals, -1)
-	// })
-	//
+	var memcached_pool_logger = log4go.NewDefaultLogger(log4go.FINEST)
+	
+	c.Specify("[MemcachedConnectionPool] New Pool is not open", func() {
+		pool := MemcachedConnectionPool{Mode: AGRESSIVE, Size: 0, Urls: []string{}, Logger: memcached_pool_logger}
+		defer pool.Close()
+	
+		c.Expect(pool.IsOpen(), gospec.Equals, false)
+		c.Expect(pool.IsClosed(), gospec.Equals, true)
+		c.Expect(pool.IsOpen(), gospec.Satisfies, pool.IsOpen() != pool.IsClosed())
+		c.Expect(pool.Len(), gospec.Equals, -1)
+	})
+	
 	// c.Specify("[MemcachedConnectionPool] Opening a Pool with Undefined Mode has errors", func() {
 	// 	pool := MemcachedConnectionPool{Mode: 0, Size: 0, Urls: []string{}, Logger: memcached_pool_logger}
 	// 	defer pool.Close()
