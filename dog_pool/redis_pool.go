@@ -50,14 +50,16 @@ func (p *RedisConnectionPool) Open() error {
 		// DON'T Connect to Redis
 		// DON'T Test the connection
 		initfn = func() (interface{}, error) {
-			return makeLazyConnection(nextUrl(), &p.Logger)
+			values := nextUrl()
+			return makeLazyConnection(values[0], values[1], &p.Logger)
 		}
 	case AGRESSIVE:
 		// Create the factory
 		// AND Connect to Redis
 		// AND Test the connection
 		initfn = func() (interface{}, error) {
-			return makeAgressiveConnection(nextUrl(), &p.Logger)
+			values := nextUrl()
+			return makeAgressiveConnection(values[0], values[1], &p.Logger)
 		}
 		// No mode specified!
 	default:
