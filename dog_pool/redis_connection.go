@@ -118,18 +118,18 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 			fallthrough
 		case redis.PipelineQueueEmptyError.Error():
 			// Log the error & break
-			p.Logger.Warn("[RedisConnection][GetReply][%s/%s] Reply Error = %v", p.Url, p.Id, reply.Err)
+			p.Logger.Warn("[RedisConnection][GetReply][%s/%s] Ignored Error from Redis, Error = %v", p.Url, p.Id, reply.Err)
 			break
 
 		default:
 			// All other errors are fatal!
 			// Close the connection and log the error
-			p.Logger.Critical("[RedisConnection][GetReply][%s/%s] Fatal Reply Error = %v", p.Url, p.Id, reply.Err)
+			p.Logger.Error("[RedisConnection][GetReply][%s/%s] Fatal Error from Redis, Error = %v", p.Url, p.Id, reply.Err)
 			p.Close()
 		}
 	} else {
 		// Log the response
-		p.Logger.Trace("[RedisConnection][GetReply][%s/%s] Reply.Type = %d, Reply.Value = %v", p.Url, p.Id, reply.Type, reply.String())
+		p.Logger.Trace("[RedisConnection][GetReply][%s/%s] Redis Reply Type = %d, Value = %v", p.Url, p.Id, reply.Type, reply.String())
 	}
 
 	// Return the reply from redis to the caller

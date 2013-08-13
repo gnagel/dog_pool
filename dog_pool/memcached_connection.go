@@ -32,7 +32,6 @@ func (p *MemcachedConnection) recoverPanic(cmd string, keys []string) error {
 
 	if nil == r {
 		return nil
-
 	}
 
 	// Panic error
