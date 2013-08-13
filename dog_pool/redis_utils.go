@@ -6,12 +6,12 @@ import "github.com/alecthomas/log4go"
 //
 // Helper to iterate urls
 //
-func loopStrings(values []string) func() [2]string {
+func loopStrings(values []string) func() []string {
 	i := 0
-	return func() string {
+	return func() []string {
 		value := values[i%len(values)]
 		i++
-		return [2]string{value, strconv.Itoa(i)}
+		return []string{value, strconv.Itoa(i)}
 	}
 }
 
