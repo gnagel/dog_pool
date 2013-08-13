@@ -4,8 +4,7 @@ package dog_pool
 // import "time"
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
-
-// import "github.com/alecthomas/log4go"
+import "github.com/alecthomas/log4go"
 
 func TestMemcachedConnectionSpecs(t *testing.T) {
 	r := gospec.NewRunner()
@@ -15,21 +14,21 @@ func TestMemcachedConnectionSpecs(t *testing.T) {
 
 // Helpers
 func MemcachedConnectionSpecs(c gospec.Context) {
-	// var memcached_connection_logger = log4go.NewDefaultLogger(log4go.FINEST)
-	//
-	// c.Specify("[MemcachedConnection] New connection is not open", func() {
-	// 	connection := MemcachedConnection{Url: "127.0.0.1:6990", Logger: &memcached_connection_logger}
-	// 	defer connection.Close()
-	//
-	// 	open := connection.IsOpen()
-	// 	closed := connection.IsClosed()
-	//
-	// 	// Should be opposite of each other:
-	// 	c.Expect(open, gospec.Equals, false)
-	// 	c.Expect(closed, gospec.Equals, true)
-	// 	c.Expect(closed, gospec.Satisfies, open != closed)
-	// })
-	//
+	var memcached_connection_logger = log4go.NewDefaultLogger(log4go.FINEST)
+	
+	c.Specify("[MemcachedConnection] New connection is not open", func() {
+		connection := MemcachedConnection{Url: "127.0.0.1:6990", Logger: &memcached_connection_logger}
+		defer connection.Close()
+	
+		open := connection.IsOpen()
+		closed := connection.IsClosed()
+	
+		// Should be opposite of each other:
+		c.Expect(open, gospec.Equals, false)
+		c.Expect(closed, gospec.Equals, true)
+		c.Expect(closed, gospec.Satisfies, open != closed)
+	})
+	
 	// c.Specify("[MemcachedConnection] Opening connection to Invalid Host/Port has errors", func() {
 	// 	connection := MemcachedConnection{Url: "127.0.0.1:6991", Logger: &memcached_connection_logger}
 	// 	defer connection.Close()
