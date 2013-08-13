@@ -5,6 +5,7 @@
 package dog_pool
 
 import "bytes"
+import "fmt"
 import "runtime"
 import "strconv"
 import "strings"
@@ -248,8 +249,12 @@ func (p *MemcachedConnection) Decrement(key string, delta uint64) (newValue uint
 //   error --> Ping was failure
 //
 func (p *MemcachedConnection) Ping() error {
-	_, err := p.Increment("ping", 1)
-	return err
+	item := &memcached.Item{}
+	item.Key = fmt.Sprintf("ping-%s-%s-%d", p.Url, p.Id, time.Now().UTC().Second())
+	item.Value = bytes.NewBufferString("1").Bytes()
+	item.Expiration = int32(time.Duration(1) * time.Second)
+
+	return p.Set(item)
 }
 
 //
@@ -280,27 +285,28 @@ func (p *MemcachedConnection) IsClosed() bool {
 // Open a new connection to memcached
 //
 func (p *MemcachedConnection) Open() error {
-	// Open the TCP connection
-	client := memcached.New(p.Url)
-	client.Timeout = time.Duration(10) * time.Second
+	// Open the TCP connection -and-
+	// Save the client pointer
+	p.client = memcached.New(p.Url)
+	p.client.Timeout = time.Duration(10) * time.Second
+
+	// Log the event
+	p.Logger.Info("[MemcachedConnection][Open][%s/%s] --> Opened!", p.Url, p.Id)
 
 	// Perform a basic command on the server
-	_, err := client.Increment("health-check", 1)
+	err := p.Ping()
 
 	// Check for errors
 	if nil != err {
+		// Reset the pointer to nil
+		p.client = nil
+
 		// Log the event
 		p.Logger.Error("[MemcachedConnection][Open][%s/%s] --> Error = %v", p.Url, p.Id, err)
 
 		// Return the error
 		return err
 	}
-
-	// Save the client pointer
-	p.client = client
-
-	// Log the event
-	p.Logger.Info("[MemcachedConnection][Open][%s/%s] --> Opened!", p.Url, p.Id)
 
 	// Return nil
 	return nil
