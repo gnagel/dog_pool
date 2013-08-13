@@ -1,5 +1,5 @@
 //
-// Redis Connection Pool written in GO
+// Memcached Connection Pool written in GO
 //
 
 package dog_pool
@@ -9,12 +9,12 @@ import "errors"
 import "github.com/alecthomas/log4go"
 
 //
-// Redis Connection Pool wrapper
+// Memcached Connection Pool wrapper
 //
-type RedisConnectionPool struct {
+type MemcachedConnectionPool struct {
 	Mode   ConnectionMode         "How should we prepare the connection pool?"
 	Size   int                    "(Max) Pool size"
-	Urls   []string               "Redis URLs to connect to"
+	Urls   []string               "Memcached URLs to connect to"
 	Logger log4go.Logger          "Logger we are using in the connection pool"
 	myPool *ConnectionPoolWrapper "Connection Pool wrapper"
 }
@@ -22,14 +22,14 @@ type RedisConnectionPool struct {
 //
 // Is the pool open?
 //
-func (p *RedisConnectionPool) IsOpen() bool {
+func (p *MemcachedConnectionPool) IsOpen() bool {
 	return nil != p.myPool
 }
 
 //
 // Is the pool closed?
 //
-func (p *RedisConnectionPool) IsClosed() bool {
+func (p *MemcachedConnectionPool) IsClosed() bool {
 	return nil == p.myPool
 }
 
@@ -37,7 +37,7 @@ func (p *RedisConnectionPool) IsClosed() bool {
 // Length of the pool
 // Returns -1 if the pool is not open
 //
-func (p *RedisConnectionPool) Len() int {
+func (p *MemcachedConnectionPool) Len() int {
 	if p.IsOpen() {
 		return p.myPool.Len()
 	}
@@ -47,7 +47,7 @@ func (p *RedisConnectionPool) Len() int {
 //
 // Open the connection pool
 //
-func (p *RedisConnectionPool) Open() error {
+func (p *MemcachedConnectionPool) Open() error {
 	p.Close()
 
 	// Lambda to iterate the urls
@@ -58,7 +58,7 @@ func (p *RedisConnectionPool) Open() error {
 	switch p.Mode {
 	case LAZY:
 		// Create the factory
-		// DON'T Connect to Redis
+		// DON'T Connect to Memcached
 		// DON'T Test the connection
 		initfn = func() (interface{}, error) {
 			values := nextUrl()
@@ -66,7 +66,7 @@ func (p *RedisConnectionPool) Open() error {
 		}
 	case AGRESSIVE:
 		// Create the factory
-		// AND Connect to Redis
+		// AND Connect to Memcached
 		// AND Test the connection
 		initfn = func() (interface{}, error) {
 			values := nextUrl()
@@ -95,7 +95,7 @@ func (p *RedisConnectionPool) Open() error {
 //
 // Close the connection pool
 //
-func (p *RedisConnectionPool) Close() {
+func (p *MemcachedConnectionPool) Close() {
 	if p.IsClosed() {
 		return
 	}
@@ -119,15 +119,15 @@ func (p *RedisConnectionPool) Close() {
 }
 
 //
-// Get a RedisConnection from the pool
+// Get a MemcachedConnection from the pool
 //
-func (p *RedisConnectionPool) Pop() (*RedisConnection, error) {
+func (p *MemcachedConnectionPool) Pop() (*MemcachedConnection, error) {
 	// Pop a connection from the pool
 	c := p.myPool.GetConnection()
 
 	// Return the connection
 	if c != nil {
-		return c.(*RedisConnection), nil
+		return c.(*MemcachedConnection), nil
 	}
 
 	// Return an error when all connections are exhausted
@@ -135,8 +135,8 @@ func (p *RedisConnectionPool) Pop() (*RedisConnection, error) {
 }
 
 //
-// Return a RedisConnection
+// Return a MemcachedConnection
 //
-func (p *RedisConnectionPool) Push(c *RedisConnection) {
+func (p *MemcachedConnectionPool) Push(c *MemcachedConnection) {
 	p.myPool.ReleaseConnection(c)
 }

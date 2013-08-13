@@ -6,22 +6,9 @@ package dog_pool
 
 import "fmt"
 import "strings"
-import "errors"
 import "time"
 import "github.com/fzzy/radix/redis"
 import "github.com/alecthomas/log4go"
-
-//
-// Constants for connecting to Redis & Logging
-//
-var ErrConnectionIsClosed = errors.New("Connection is closed, command aborted")
-
-const timeout = time.Duration(10) * time.Second
-const log_client_has_saved_connection = "[RedisConnection][Client] - %s saved available for Url = %s"
-const log_ping_reply = "[RedisConnection][Ping] %s for Url = %s, Redis Reply = %#v"
-const log_closed = "[RedisConnection][Close] - Closed connection to %s"
-const log_get_reply = "[RedisConnection][GetReply] Redis Reply = %#v"
-const log_get_reply_error = "[RedisConnection][GetReply] Response Error = %v"
 
 //
 // Connection Wrapper for Redis
@@ -32,6 +19,8 @@ type RedisConnection struct {
 	Id string "(optional) Identifier for distingushing between redis connections"
 
 	Logger *log4go.Logger "Handle to the logger we are using"
+
+	Timeout time.Duration "Connection Timeout"
 
 	client *redis.Client "Connection to a Redis, may be nil"
 }
@@ -163,12 +152,12 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 func (p *RedisConnection) Client() (*redis.Client, error) {
 	// Is a saved connection available?
 	if p.IsOpen() {
-		p.Logger.Trace(log_client_has_saved_connection, "Has", p.Url, p.Id)
+		p.Logger.Trace("[RedisConnection][Client][%s/%s] --> Found Opened Connection!", p.Url, p.Id)
 
 		// Return the connection
 		return p.client, nil
 	} else {
-		p.Logger.Warn(log_client_has_saved_connection, "No", p.Url, p.Id)
+		p.Logger.Warn("[RedisConnection][Client][%s/%s] --> Found Closed Connection!", p.Url, p.Id)
 	}
 
 	// Open a new connection to redis
@@ -219,8 +208,13 @@ func (p *RedisConnection) IsClosed() bool {
 // Open a new connection to redis
 //
 func (p *RedisConnection) Open() error {
+	// Set the default timeout
+	if time.Duration(0) == p.Timeout {
+		p.Timeout = time.Duration(10) * time.Second
+	}
+
 	// Open the TCP connection
-	client, err := redis.DialTimeout("tcp", p.Url, timeout)
+	client, err := redis.DialTimeout("tcp", p.Url, p.Timeout)
 
 	// Check for errors
 	if nil != err {
