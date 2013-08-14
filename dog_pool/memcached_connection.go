@@ -376,11 +376,13 @@ func (p *MemcachedConnection) Ping() error {
 	item := &memcached.Item{}
 	item.Key = fmt.Sprintf("%s-%s-ping", p.Url, p.Id)
 	item.Value = bytes.NewBufferString("1").Bytes()
-	item.Expiration = int32(1) // Seconds
+	item.Expiration = int32(10) // Seconds
 
 	// Set, then delete the item
 	err := p.Set(item)
-	p.Delete(item.Key)
+	if nil == err {
+		p.Delete(item.Key)
+	}
 
 	// Return any errors from set
 	return err
@@ -426,8 +428,13 @@ func (p *MemcachedConnection) Open() error {
 	item := &memcached.Item{}
 	item.Key = fmt.Sprintf("%s-%s-opened", p.Url, p.Id)
 	item.Value = bytes.NewBufferString("1").Bytes()
-	item.Expiration = int32(1) // Seconds
+	item.Expiration = int32(10) // Seconds
+
+	// Set, then delete the item
 	err := p.Set(item)
+	if nil == err {
+		p.Delete(item.Key)
+	}
 
 	// Check for errors
 	if nil != err {
