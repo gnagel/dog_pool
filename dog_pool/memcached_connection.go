@@ -132,7 +132,7 @@ func (p *MemcachedConnection) GetMulti(keys []string) (output map[string]*memcac
 
 	switch err {
 	case nil:
-		p.Logger.Info(func() string {
+		p.Logger.Trace(func() string {
 			buffer := make([]string, len(output))
 			i := 0
 			for key, item := range output {
@@ -171,9 +171,9 @@ func (p *MemcachedConnection) Get(key string) (item *memcached.Item, err error) 
 
 	switch err {
 	case nil:
-		p.Logger.Info("[MemcachedConnection][Get][%s/%s] Key = '%v' --> Got Value = '%v'!", p.Url, p.Id, key, bytes.NewBuffer(item.Value).String())
+		p.Logger.Trace("[MemcachedConnection][Get][%s/%s] Key = '%v' --> Got Value = '%v'!", p.Url, p.Id, key, bytes.NewBuffer(item.Value).String())
 	case memcached.ErrCacheMiss:
-		p.Logger.Info("[MemcachedConnection][Get][%s/%s] Key = '%v' --> Not Stored = '%v'", p.Url, p.Id, key, err)
+		p.Logger.Trace("[MemcachedConnection][Get][%s/%s] Key = '%v' --> Not Stored = '%v'", p.Url, p.Id, key, err)
 	default:
 		p.Logger.Error("[MemcachedConnection][Get][%s/%s] Key = '%v' --> Fatal Error = '%v'", p.Url, p.Id, key, err)
 		p.Close()
@@ -206,7 +206,7 @@ func (p *MemcachedConnection) Set(item *memcached.Item) (err error) {
 	delta := bytes.NewBuffer(item.Value).String()
 	switch err {
 	case nil:
-		p.Logger.Info("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v', Expires = %d(s) --> Set Value!", p.Url, p.Id, key, delta, item.Expiration)
+		p.Logger.Trace("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v', Expires = %d(s) --> Set Value!", p.Url, p.Id, key, delta, item.Expiration)
 	default:
 		p.Logger.Error("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v', Expires = %d(s) --> Fatal Error = '%v'", p.Url, p.Id, key, delta, item.Expiration, err)
 		p.Close()
@@ -236,9 +236,9 @@ func (p *MemcachedConnection) Delete(key string) (err error) {
 
 	switch err {
 	case nil:
-		p.Logger.Info("[MemcachedConnection][Delete][%s/%s] Key = '%v' --> Deleted Value!", p.Url, p.Id, key)
+		p.Logger.Trace("[MemcachedConnection][Delete][%s/%s] Key = '%v' --> Deleted Value!", p.Url, p.Id, key)
 	case memcached.ErrCacheMiss:
-		p.Logger.Info("[MemcachedConnection][Delete][%s/%s] Key = '%v' --> Not Stored = '%v'", p.Url, p.Id, key, err)
+		p.Logger.Trace("[MemcachedConnection][Delete][%s/%s] Key = '%v' --> Not Stored = '%v'", p.Url, p.Id, key, err)
 	default:
 		p.Logger.Error("[MemcachedConnection][Delete][%s/%s] Key = '%v' --> Fatal Error = '%v'", p.Url, p.Id, key, err)
 		p.Close()
@@ -272,9 +272,9 @@ func (p *MemcachedConnection) Add(item *memcached.Item) (err error) {
 	delta := bytes.NewBuffer(item.Value).String()
 	switch err {
 	case nil:
-		p.Logger.Info("[MemcachedConnection][Add][%s/%s] Key = '%v', Value = '%v' --> Added Value!", p.Url, p.Id, key, delta)
+		p.Logger.Trace("[MemcachedConnection][Add][%s/%s] Key = '%v', Value = '%v' --> Added Value!", p.Url, p.Id, key, delta)
 	case memcached.ErrNotStored:
-		p.Logger.Info("[MemcachedConnection][Add][%s/%s] Key = '%v', Value = '%v' --> Not Stored = '%v'", p.Url, p.Id, key, delta, err)
+		p.Logger.Trace("[MemcachedConnection][Add][%s/%s] Key = '%v', Value = '%v' --> Not Stored = '%v'", p.Url, p.Id, key, delta, err)
 	default:
 		p.Logger.Error("[MemcachedConnection][Add][%s/%s] Key = '%v', Value = '%v' --> Fatal Error = '%v'", p.Url, p.Id, key, delta, err)
 		p.Close()
@@ -309,9 +309,9 @@ func (p *MemcachedConnection) Increment(key string, delta uint64) (newValue uint
 
 	switch err {
 	case nil:
-		p.Logger.Info("[MemcachedConnection][Increment][%s/%s] Key = '%v', Delta = %d --> Incremented Value = %d!", p.Url, p.Id, key, delta, newValue)
+		p.Logger.Trace("[MemcachedConnection][Increment][%s/%s] Key = '%v', Delta = %d --> Incremented Value = %d!", p.Url, p.Id, key, delta, newValue)
 	case memcached.ErrCacheMiss:
-		p.Logger.Info("[MemcachedConnection][Increment][%s/%s] Key = '%v', Delta = %d --> Not Stored = '%v'", p.Url, p.Id, key, delta, err)
+		p.Logger.Trace("[MemcachedConnection][Increment][%s/%s] Key = '%v', Delta = %d --> Not Stored = '%v'", p.Url, p.Id, key, delta, err)
 	default:
 		p.Logger.Error("[MemcachedConnection][Increment][%s/%s] Key = '%v', Delta = %d --> Fatal Error = '%v'", p.Url, p.Id, key, err)
 		p.Close()
@@ -347,9 +347,9 @@ func (p *MemcachedConnection) Decrement(key string, delta uint64) (newValue uint
 
 	switch err {
 	case nil:
-		p.Logger.Info("[MemcachedConnection][Decrement][%s/%s] Key = '%v', Delta = %d --> Decremented Value = %d!", p.Url, p.Id, key, delta, newValue)
+		p.Logger.Trace("[MemcachedConnection][Decrement][%s/%s] Key = '%v', Delta = %d --> Decremented Value = %d!", p.Url, p.Id, key, delta, newValue)
 	case memcached.ErrCacheMiss:
-		p.Logger.Info("[MemcachedConnection][Decrement][%s/%s] Key = '%v', Delta = %d --> Not Stored = '%v'", p.Url, p.Id, key, delta, err)
+		p.Logger.Trace("[MemcachedConnection][Decrement][%s/%s] Key = '%v', Delta = %d --> Not Stored = '%v'", p.Url, p.Id, key, delta, err)
 	default:
 		p.Logger.Error("[MemcachedConnection][Decrement][%s/%s] Key = '%v', Delta = %d --> Fatal Error = '%v'", p.Url, p.Id, key, err)
 		p.Close()
@@ -460,7 +460,7 @@ func (p *MemcachedConnection) Close() (err error) {
 	p.client = nil
 
 	// Log the event
-	p.Logger.Debug("[MemcachedConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
+	p.Logger.Info("[MemcachedConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
 
 	return
 }

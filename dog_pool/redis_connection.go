@@ -77,7 +77,7 @@ func (p *RedisConnection) Close() (err error) {
 	p.client = nil
 
 	// Log the event
-	p.Logger.Debug("[RedisConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
+	p.Logger.Info("[RedisConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
 
 	return
 }
