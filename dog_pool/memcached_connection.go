@@ -207,8 +207,6 @@ func (p *MemcachedConnection) Set(item *memcached.Item) (err error) {
 	switch err {
 	case nil:
 		p.Logger.Info("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v', Expires = %d(s) --> Set Value!", p.Url, p.Id, key, delta, item.Expiration)
-	case memcached.ErrNotStored:
-		p.Logger.Info("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v', Expires = %d(s) --> Not Stored = '%v'", p.Url, p.Id, key, delta, item.Expiration, err)
 	default:
 		p.Logger.Error("[MemcachedConnection][Set][%s/%s] Key = '%v', Value = '%v', Expires = %d(s) --> Fatal Error = '%v'", p.Url, p.Id, key, delta, item.Expiration, err)
 		p.Close()
@@ -380,7 +378,12 @@ func (p *MemcachedConnection) Ping() error {
 	item.Value = bytes.NewBufferString("1").Bytes()
 	item.Expiration = int32(1) // Seconds
 
-	return p.Set(item)
+	// Set, then delete the item
+	err := p.Set(item)
+	p.Delete(item.Key)
+
+	// Return any errors from set
+	return err
 }
 
 //
