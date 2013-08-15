@@ -64,14 +64,77 @@ func makeAgressiveThriftConnection(url string, id string, timeout time.Duration,
 //  ========================================
 //
 
-//
-// Cmd calls the given Thrift command:
-// - Calls Append(...)
-// - Returns GetReply()
-//
-func (p *ThriftConnection) Cmd(cmd string, args ...interface{}) *thrift.Reply {
-	p.Append(cmd, args...)
-	return p.GetReply()
+func (p *ThriftConnection) AtomicIncrement(TableName []byte, Row []byte, Column []byte, Value int64) (int64, error) {
+}
+func (p *ThriftConnection) Compact(TableNameOrRegionName []byte) error {}
+func (p *ThriftConnection) CreateTable(TableName []byte, ColumnFamilies []*thrift.ColumnDescriptor) error {
+}
+func (p *ThriftConnection) DeleteAll(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) error {
+}
+func (p *ThriftConnection) DeleteAllRow(TableName []byte, Row []byte, Attributes map[string][]byte) error {
+}
+func (p *ThriftConnection) DeleteAllRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) error {
+}
+func (p *ThriftConnection) DeleteAllTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, Attributes map[string][]byte) error {
+}
+func (p *ThriftConnection) DeleteTable(TableName []byte) error  {}
+func (p *ThriftConnection) DisableTable(TableName []byte) error {}
+func (p *ThriftConnection) EnableTable(TableName []byte) error  {}
+func (p *ThriftConnection) Get(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) ([]*thrift.TCell, error) {
+}
+func (p *ThriftConnection) GetColumnDescriptors(TableName []byte) (map[string]*thrift.ColumnDescriptor, error) {
+}
+func (p *ThriftConnection) GetRegionInfo(Row []byte) (*thrift.TRegionInfo, error) {}
+func (p *ThriftConnection) GetRow(TableName []byte, Row []byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+}
+func (p *ThriftConnection) GetRowOrBefore(TableName []byte, Row []byte, Family []byte) ([]*thrift.TCell, error) {
+}
+func (p *ThriftConnection) GetRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+}
+func (p *ThriftConnection) GetRowWithColumns(TableName []byte, Row []byte, Columns [][]byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+}
+func (p *ThriftConnection) GetRowWithColumnsTs(TableName []byte, Row []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+}
+func (p *ThriftConnection) GetRows(TableName []byte, Rows [][]byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+}
+func (p *ThriftConnection) GetRowsTs(TableName []byte, Rows [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+}
+func (p *ThriftConnection) GetRowsWithColumns(TableName []byte, Rows [][]byte, Columns [][]byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+}
+func (p *ThriftConnection) GetRowsWithColumnsTs(TableName []byte, Rows [][]byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+}
+func (p *ThriftConnection) GetTableNames() ([][]byte, error)                                {}
+func (p *ThriftConnection) GetTableRegions(TableName []byte) ([]*thrift.TRegionInfo, error) {}
+func (p *ThriftConnection) GetVer(TableName []byte, Row []byte, Column []byte, NumVersions int32, Attributes map[string][]byte) ([]*thrift.TCell, error) {
+}
+func (p *ThriftConnection) GetVerTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, NumVersions int32, Attributes map[string][]byte) ([]*thrift.TCell, error) {
+}
+func (p *ThriftConnection) Increment(Increment *thrift.TIncrement) error        {}
+func (p *ThriftConnection) IncrementRows(Increments []*thrift.TIncrement) error {}
+func (p *ThriftConnection) IsTableEnabled(TableName []byte) (bool, error)       {}
+func (p *ThriftConnection) MajorCompact(TableNameOrRegionName []byte) error     {}
+func (p *ThriftConnection) MutateRow(TableName []byte, Row []byte, Mutations []*thrift.Mutation, Attributes map[string][]byte) error {
+}
+func (p *ThriftConnection) MutateRowTs(TableName []byte, Row []byte, Mutations []*thrift.Mutation, Timestamp int64, Attributes map[string][]byte) error {
+}
+func (p *ThriftConnection) MutateRows(TableName []byte, RowBatches []*thrift.BatchMutation, Attributes map[string][]byte) error {
+}
+func (p *ThriftConnection) MutateRowsTs(TableName []byte, RowBatches []*thrift.BatchMutation, Timestamp int64, Attributes map[string][]byte) error {
+}
+func (p *ThriftConnection) ScannerClose(Id int32) error                                         {}
+func (p *ThriftConnection) ScannerGet(Id int32) ([]*thrift.TRowResult, error)                   {}
+func (p *ThriftConnection) ScannerGetList(Id int32, NbRows int32) ([]*thrift.TRowResult, error) {}
+func (p *ThriftConnection) ScannerOpen(TableName []byte, StartRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+}
+func (p *ThriftConnection) ScannerOpenTs(TableName []byte, StartRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error) {
+}
+func (p *ThriftConnection) ScannerOpenWithPrefix(TableName []byte, StartAndPrefix []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+}
+func (p *ThriftConnection) ScannerOpenWithScan(TableName []byte, Scan *thrift.TScan, Attributes map[string][]byte) (int32, error) {
+}
+func (p *ThriftConnection) ScannerOpenWithStop(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+}
+func (p *ThriftConnection) ScannerOpenWithStopTs(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error) {
 }
 
 //
@@ -195,6 +258,10 @@ func (p *ThriftConnection) IsClosed() bool {
 // Open a new connection to thrift
 //
 func (p *ThriftConnection) Open() error {
+	if IsOpen() {
+		return nil
+	}
+	
 	// Set the default timeout
 	if time.Duration(0) == p.Timeout {
 		p.Timeout = time.Duration(10) * time.Second
