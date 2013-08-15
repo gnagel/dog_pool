@@ -19,9 +19,6 @@ type ThriftClientInterface interface {
 	// Is the connection closed?
 	IsClosed() bool
 
-	// Open the connection, return error on failure
-	Open(url string) error
-
 	// Close the connection
 	Close() error
 }

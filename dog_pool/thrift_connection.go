@@ -4,8 +4,6 @@
 
 package dog_pool
 
-import "fmt"
-import "strings"
 import "time"
 import "github.com/alecthomas/log4go"
 import "./thrift"
@@ -65,151 +63,604 @@ func makeAgressiveThriftConnection(url string, id string, timeout time.Duration,
 //
 
 func (p *ThriftConnection) AtomicIncrement(TableName []byte, Row []byte, Column []byte, Value int64) (int64, error) {
+	if err := p.SafeOpen(); nil != err {
+		return 0, err
+	}
+
+	// TODO
+	output, err := p.client.AtomicIncrement(TableName, Row, Column, Value)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
-func (p *ThriftConnection) Compact(TableNameOrRegionName []byte) error {}
+
+func (p *ThriftConnection) Compact(TableNameOrRegionName []byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.Compact(TableNameOrRegionName)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
+}
+
 func (p *ThriftConnection) CreateTable(TableName []byte, ColumnFamilies []*thrift.ColumnDescriptor) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.CreateTable(TableName, ColumnFamilies)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
 }
+
 func (p *ThriftConnection) DeleteAll(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.DeleteAll(TableName, Row, Column, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
 }
+
 func (p *ThriftConnection) DeleteAllRow(TableName []byte, Row []byte, Attributes map[string][]byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.DeleteAllRow(TableName, Row, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
 }
+
 func (p *ThriftConnection) DeleteAllRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.DeleteAllRowTs(TableName, Row, Timestamp, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
 }
+
 func (p *ThriftConnection) DeleteAllTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, Attributes map[string][]byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.DeleteAllTs(TableName, Row, Column, Timestamp, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
 }
-func (p *ThriftConnection) DeleteTable(TableName []byte) error  {}
-func (p *ThriftConnection) DisableTable(TableName []byte) error {}
-func (p *ThriftConnection) EnableTable(TableName []byte) error  {}
+
+func (p *ThriftConnection) DeleteTable(TableName []byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.DeleteTable(TableName)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
+}
+
+func (p *ThriftConnection) DisableTable(TableName []byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.DisableTable(TableName)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
+}
+
+func (p *ThriftConnection) EnableTable(TableName []byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.EnableTable(TableName)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
+}
+
 func (p *ThriftConnection) Get(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) ([]*thrift.TCell, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.Get(TableName, Row, Column, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetColumnDescriptors(TableName []byte) (map[string]*thrift.ColumnDescriptor, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetColumnDescriptors(TableName)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
-func (p *ThriftConnection) GetRegionInfo(Row []byte) (*thrift.TRegionInfo, error) {}
+
+func (p *ThriftConnection) GetRegionInfo(Row []byte) (*thrift.TRegionInfo, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRegionInfo(Row)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
+}
+
 func (p *ThriftConnection) GetRow(TableName []byte, Row []byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRow(TableName, Row, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetRowOrBefore(TableName []byte, Row []byte, Family []byte) ([]*thrift.TCell, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRowOrBefore(TableName, Row, Family)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRowTs(TableName, Row, Timestamp, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetRowWithColumns(TableName []byte, Row []byte, Columns [][]byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRowWithColumns(TableName, Row, Columns, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetRowWithColumnsTs(TableName []byte, Row []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRowWithColumnsTs(TableName, Row, Columns, Timestamp, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetRows(TableName []byte, Rows [][]byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRows(TableName, Rows, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetRowsTs(TableName []byte, Rows [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRowsTs(TableName, Rows, Timestamp, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetRowsWithColumns(TableName []byte, Rows [][]byte, Columns [][]byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRowsWithColumns(TableName, Rows, Columns, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetRowsWithColumnsTs(TableName []byte, Rows [][]byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetRowsWithColumnsTs(TableName, Rows, Columns, Timestamp, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
-func (p *ThriftConnection) GetTableNames() ([][]byte, error)                                {}
-func (p *ThriftConnection) GetTableRegions(TableName []byte) ([]*thrift.TRegionInfo, error) {}
+
+func (p *ThriftConnection) GetTableNames() ([][]byte, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetTableNames()
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
+}
+
+func (p *ThriftConnection) GetTableRegions(TableName []byte) ([]*thrift.TRegionInfo, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetTableRegions(TableName)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
+}
+
 func (p *ThriftConnection) GetVer(TableName []byte, Row []byte, Column []byte, NumVersions int32, Attributes map[string][]byte) ([]*thrift.TCell, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetVer(TableName, Row, Column, NumVersions, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) GetVerTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, NumVersions int32, Attributes map[string][]byte) ([]*thrift.TCell, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.GetVerTs(TableName, Row, Column, Timestamp, NumVersions, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
-func (p *ThriftConnection) Increment(Increment *thrift.TIncrement) error        {}
-func (p *ThriftConnection) IncrementRows(Increments []*thrift.TIncrement) error {}
-func (p *ThriftConnection) IsTableEnabled(TableName []byte) (bool, error)       {}
-func (p *ThriftConnection) MajorCompact(TableNameOrRegionName []byte) error     {}
+
+func (p *ThriftConnection) Increment(Increment *thrift.TIncrement) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.Increment(Increment)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
+}
+
+func (p *ThriftConnection) IncrementRows(Increments []*thrift.TIncrement) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.IncrementRows(Increments)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
+}
+
+func (p *ThriftConnection) IsTableEnabled(TableName []byte) (bool, error) {
+	if err := p.SafeOpen(); nil != err {
+		return false, err
+	}
+
+	// TODO
+	output, err := p.client.IsTableEnabled(TableName)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
+}
+
+func (p *ThriftConnection) MajorCompact(TableNameOrRegionName []byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.MajorCompact(TableNameOrRegionName)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
+}
+
 func (p *ThriftConnection) MutateRow(TableName []byte, Row []byte, Mutations []*thrift.Mutation, Attributes map[string][]byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.MutateRow(TableName, Row, Mutations, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
 }
+
 func (p *ThriftConnection) MutateRowTs(TableName []byte, Row []byte, Mutations []*thrift.Mutation, Timestamp int64, Attributes map[string][]byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.MutateRowTs(TableName, Row, Mutations, Timestamp, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
 }
+
 func (p *ThriftConnection) MutateRows(TableName []byte, RowBatches []*thrift.BatchMutation, Attributes map[string][]byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.MutateRows(TableName, RowBatches, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
 }
+
 func (p *ThriftConnection) MutateRowsTs(TableName []byte, RowBatches []*thrift.BatchMutation, Timestamp int64, Attributes map[string][]byte) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.MutateRowsTs(TableName, RowBatches, Timestamp, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
 }
-func (p *ThriftConnection) ScannerClose(Id int32) error                                         {}
-func (p *ThriftConnection) ScannerGet(Id int32) ([]*thrift.TRowResult, error)                   {}
-func (p *ThriftConnection) ScannerGetList(Id int32, NbRows int32) ([]*thrift.TRowResult, error) {}
+
+func (p *ThriftConnection) ScannerClose(Id int32) error {
+	if err := p.SafeOpen(); nil != err {
+		return err
+	}
+
+	// TODO
+	err := p.client.ScannerClose(Id)
+
+	if nil != err {
+		p.Close()
+	}
+	return err
+}
+
+func (p *ThriftConnection) ScannerGet(Id int32) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.ScannerGet(Id)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
+}
+
+func (p *ThriftConnection) ScannerGetList(Id int32, NbRows int32) ([]*thrift.TRowResult, error) {
+	if err := p.SafeOpen(); nil != err {
+		return nil, err
+	}
+
+	// TODO
+	output, err := p.client.ScannerGetList(Id, NbRows)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
+}
+
 func (p *ThriftConnection) ScannerOpen(TableName []byte, StartRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+	if err := p.SafeOpen(); nil != err {
+		return 0, err
+	}
+
+	// TODO
+	output, err := p.client.ScannerOpen(TableName, StartRow, Columns, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) ScannerOpenTs(TableName []byte, StartRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error) {
+	if err := p.SafeOpen(); nil != err {
+		return 0, err
+	}
+
+	// TODO
+	output, err := p.client.ScannerOpenTs(TableName, StartRow, Columns, Timestamp, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) ScannerOpenWithPrefix(TableName []byte, StartAndPrefix []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+	if err := p.SafeOpen(); nil != err {
+		return 0, err
+	}
+
+	// TODO
+	output, err := p.client.ScannerOpenWithPrefix(TableName, StartAndPrefix, Columns, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) ScannerOpenWithScan(TableName []byte, Scan *thrift.TScan, Attributes map[string][]byte) (int32, error) {
+	if err := p.SafeOpen(); nil != err {
+		return 0, err
+	}
+
+	// TODO
+	output, err := p.client.ScannerOpenWithScan(TableName, Scan, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) ScannerOpenWithStop(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+	if err := p.SafeOpen(); nil != err {
+		return 0, err
+	}
+
+	// TODO
+	output, err := p.client.ScannerOpenWithStop(TableName, StartRow, StopRow, Columns, Attributes)
+
+	if nil != err {
+		p.Close()
+	}
+	return output, err
 }
+
 func (p *ThriftConnection) ScannerOpenWithStopTs(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error) {
-}
-
-//
-// Append adds the given call to the pipeline queue.
-// Use GetReply() to read the reply.
-//
-func (p *ThriftConnection) Append(cmd string, args ...interface{}) {
-	args_to_s := func() string {
-		return fmt.Sprintf(strings.Repeat("%v ", len(args)), args...)
+	if err := p.SafeOpen(); nil != err {
+		return 0, err
 	}
 
-	// Wrap in a lambda to prevent evaulation, unless logging is enabled ...
-	p.Logger.Trace(func() string {
-		args_s := args_to_s()
-		return fmt.Sprintf("[ThriftConnection][Append][%s/%s] Thrift Command = '%s %s'", p.Url, p.Id, cmd, args_s)
-	})
+	output, err := p.client.ScannerOpenWithStopTs(TableName, StartRow, StopRow, Columns, Timestamp, Attributes)
 
-	// If the connection is not open, then open it
-	if !p.IsOpen() {
-		// Did opening the connection fail?
-		if err := p.Open(); nil != err {
-			p.Logger.Warn(func() string {
-				args_s := args_to_s()
-				return fmt.Sprintf("[ThriftConnection][Append][%s/%s] Thrift Command = '%s %s' --> Error = %v", p.Url, p.Id, cmd, args_s, err)
-			})
-			return
-		}
+	if nil != err {
+		p.Close()
 	}
-
-	// Append the command
-	p.client.Append(cmd, args...)
-}
-
-//
-// GetReply returns the reply for the next request in the pipeline queue.
-// Error reply with PipelineQueueEmptyError is returned,
-// if the pipeline queue is empty.
-//
-func (p *ThriftConnection) GetReply() *thrift.Reply {
-	// Connection is closed?
-	if !p.IsOpen() {
-		return &thrift.Reply{Type: thrift.ErrorReply, Err: ErrConnectionIsClosed}
-	}
-
-	// Get the reply from thrift
-	reply := p.client.GetReply()
-
-	// If the connection
-	if reply.Type == thrift.ErrorReply {
-		//* Common errors
-		switch reply.Err.Error() {
-		case thrift.AuthError.Error():
-			fallthrough
-		case thrift.LoadingError.Error():
-			fallthrough
-		case thrift.ParseError.Error():
-			fallthrough
-		case thrift.PipelineQueueEmptyError.Error():
-			// Log the error & break
-			p.Logger.Warn("[ThriftConnection][GetReply][%s/%s] Ignored Error from Thrift, Error = %v", p.Url, p.Id, reply.Err)
-			break
-
-		default:
-			// All other errors are fatal!
-			// Close the connection and log the error
-			p.Logger.Error("[ThriftConnection][GetReply][%s/%s] Fatal Error from Thrift, Error = %v", p.Url, p.Id, reply.Err)
-			p.Close()
-		}
-	} else {
-		// Log the response
-		p.Logger.Trace("[ThriftConnection][GetReply][%s/%s] Thrift Reply Type = %d, Value = %v", p.Url, p.Id, reply.Type, reply.String())
-	}
-
-	// Return the reply from thrift to the caller
-	return reply
+	return output, err
 }
 
 //
@@ -227,7 +678,10 @@ func (p *ThriftConnection) GetReply() *thrift.Reply {
 //   error --> Ping was failure
 //
 func (p *ThriftConnection) Ping() error {
-	return p.Cmd("ping").Err
+	// return p.Cmd("ping").Err
+
+	// TODO
+	return nil
 }
 
 //
@@ -254,14 +708,17 @@ func (p *ThriftConnection) IsClosed() bool {
 	return output
 }
 
+func (p *ThriftConnection) SafeOpen() error {
+	if p.IsOpen() {
+		return nil
+	}
+	return p.Open()
+}
+
 //
 // Open a new connection to thrift
 //
 func (p *ThriftConnection) Open() error {
-	if IsOpen() {
-		return nil
-	}
-	
 	// Set the default timeout
 	if time.Duration(0) == p.Timeout {
 		p.Timeout = time.Duration(10) * time.Second
