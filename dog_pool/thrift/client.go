@@ -11,24 +11,7 @@ import "github.com/samuel/go-thrift/thrift"
 // 
 // ========================================
 // 
-// Extension to (generated) Hbase interface
-// 
-// ========================================
-// 
-type ThriftHbase interface {
-	Hbase
-
-	IsOpen() bool
-	IsClosed() bool
-
-	Open(url string) error
-	Close() error
-}
-
-// 
-// ========================================
-// 
-// Implementation of ThriftHbase for HbaseClient
+// Extend HbaseClient to implement ThriftHbaseClientInterface
 // 
 // ========================================
 // 
