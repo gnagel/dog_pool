@@ -2,19 +2,19 @@
 // Extensions for the generated hbase.go thrift API
 //
 
-package thrift
+package thrift_hbase
 
 import "net"
 import "net/rpc"
 import "github.com/samuel/go-thrift/thrift"
 
-// 
+//
 // ========================================
-// 
+//
 // Extend HbaseClient to implement ThriftHbaseClientInterface
-// 
+//
 // ========================================
-// 
+//
 
 // Is the connection open?
 func (s *HbaseClient) IsOpen() bool {
@@ -47,7 +47,7 @@ func (s *HbaseClient) Open(url string) error {
 	}
 
 	readwrite := thrift.NewFramedReadWriteCloser(conn, 0)
-	
+
 	// Strict Write = true
 	// Strict Read = false
 	protocol := thrift.NewBinaryProtocol(true, false)

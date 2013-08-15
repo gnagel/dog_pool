@@ -6,15 +6,14 @@
 
 package dog_pool
 
-import "./thrift"
-import "github.com/fzzy/radix/redis"
+import "./thrift_hbase"
 
 type ThriftHbaseClientInterface interface {
 	// Implemenent all of the client methods
-	thrift.Hbase
+	thrift_hbase.Hbase
 
 	// Plus these methods too ...
-	
+
 	// Is the connection open?
 	IsOpen() bool
 	// Is the connection closed?
@@ -22,7 +21,7 @@ type ThriftHbaseClientInterface interface {
 
 	// Open the connection, return error on failure
 	Open(url string) error
-	
+
 	// Close the connection
 	Close() error
 }

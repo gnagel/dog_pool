@@ -7,30 +7,30 @@
 package dog_pool
 
 import "testing"
-import "github.com/fzzy/radix/redis"
 import "github.com/orfjackal/gospec/src/gospec"
+import "./thrift_hbase"
 
-func TestRedisClientInterfaceSpecs(t *testing.T) {
+func TestThriftHbaseClientInterfaceSpecs(t *testing.T) {
 	r := gospec.NewRunner()
-	r.AddSpec(RedisClientInterfaceSpecs)
+	r.AddSpec(ThriftHbaseClientInterfaceSpecs)
 	gospec.MainGoTest(r, t)
 }
 
 // Helpers
-func RedisClientInterfaceSpecs(c gospec.Context) {
-	c.Specify("[RedisClientInterface] RedisConnection satisfies RedisClientInterface", func() {
-		connection := &RedisConnection{}
+func ThriftHbaseClientInterfaceSpecs(c gospec.Context) {
+	c.Specify("[ThriftHbaseClientInterface] ThriftHbaseConnection satisfies ThriftHbaseClientInterface", func() {
+		connection := &ThriftHbaseConnection{}
 
 		// Wont' compile unless it implements the interface
-		var redis_interface RedisClientInterface = connection
-		c.Expect(redis_interface, gospec.Satisfies, true)
+		var thrifthbase_interface ThriftHbaseClientInterface = connection
+		c.Expect(thrifthbase_interface, gospec.Satisfies, true)
 	})
 
-	c.Specify("[RedisClientInterface] redis.Client satisfies RedisClientInterface", func() {
-		client := &redis.Client{}
+	c.Specify("[ThriftHbaseClientInterface] thrift.HbaseClient satisfies ThriftHbaseClientInterface", func() {
+		client := &thrift_hbase.HbaseClient{}
 
 		// Wont' compile unless it implements the interface
-		var redis_interface RedisClientInterface = client
-		c.Expect(redis_interface, gospec.Satisfies, true)
+		var thrifthbase_interface ThriftHbaseClientInterface = client
+		c.Expect(thrifthbase_interface, gospec.Satisfies, true)
 	})
 }
