@@ -6,6 +6,7 @@ package thrift
 
 import "net"
 import "net/rpc"
+import "time"
 import "github.com/samuel/go-thrift/thrift"
 
 //
@@ -39,9 +40,9 @@ func (s *HbaseClient) Close() error {
 }
 
 // Create the thrift client to connect to the server
-func (s *HbaseClient) Open(url string) error {
+func (s *HbaseClient) Open(url string, timeout time.Duration) error {
 	// Connect to the server
-	conn, err := net.Dial("tcp", url)
+	conn, err := net.DialTimeout("tcp", url, timeout)
 	if err != nil {
 		return err
 	}

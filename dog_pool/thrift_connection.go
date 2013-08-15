@@ -7,8 +7,8 @@ package dog_pool
 import "fmt"
 import "strings"
 import "time"
-import "github.com/samuel/go-thrift/thrift"
 import "github.com/alecthomas/log4go"
+import "./thrift"
 
 //
 // Connection Wrapper for Thrift
@@ -22,7 +22,7 @@ type ThriftConnection struct {
 
 	Timeout time.Duration "Connection Timeout"
 
-	client *thrift.Client "Connection to a Thrift, may be nil"
+	client *thrift.HbaseClient "Connection to a Thrift, may be nil"
 }
 
 //
@@ -63,24 +63,6 @@ func makeAgressiveThriftConnection(url string, id string, timeout time.Duration,
 //
 //  ========================================
 //
-
-//
-// Close closes the connection.
-//
-func (p *ThriftConnection) Close() (err error) {
-	// Close the connection
-	if nil != p.client {
-		err = p.client.Close()
-	}
-
-	// Set the pointer to nil
-	p.client = nil
-
-	// Log the event
-	p.Logger.Info("[ThriftConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
-
-	return
-}
 
 //
 // Cmd calls the given Thrift command:
@@ -245,10 +227,11 @@ func (p *ThriftConnection) Open() error {
 	}
 
 	// Open the TCP connection
-	client, err := thrift.DialTimeout("tcp", p.Url, p.Timeout)
+	client := &thrift.HbaseClient{}
 
+	// Open the connection &
 	// Check for errors
-	if nil != err {
+	if err := client.Open(p.Url, p.Timeout); nil != err {
 		// Log the event
 		p.Logger.Error("[ThriftConnection][Open][%s/%s] --> Error = %v", p.Url, p.Id, err)
 
@@ -264,4 +247,22 @@ func (p *ThriftConnection) Open() error {
 
 	// Return nil
 	return nil
+}
+
+//
+// Close closes the connection.
+//
+func (p *ThriftConnection) Close() (err error) {
+	// Close the connection
+	if nil != p.client {
+		err = p.client.Close()
+	}
+
+	// Set the pointer to nil
+	p.client = nil
+
+	// Log the event
+	p.Logger.Info("[ThriftConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
+
+	return
 }
