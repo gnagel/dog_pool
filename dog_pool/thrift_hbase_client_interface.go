@@ -1,16 +1,16 @@
 //
 // Thrift+Hbase Client Interface
 //
-// Interface implemented by thrift.Hbase and dog_pool.ThriftHbaseConnection
+// Interface implemented by thrift.Hbase and dog_pool.ThriftConnection
 //
 
 package dog_pool
 
-import "./thrift_hbase"
+import "./thrift"
 
-type ThriftHbaseClientInterface interface {
+type ThriftClientInterface interface {
 	// Implemenent all of the client methods
-	thrift_hbase.Hbase
+	thrift.Hbase
 
 	// Plus these methods too ...
 

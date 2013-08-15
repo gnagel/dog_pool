@@ -32,13 +32,13 @@ echo ".................................................................."
 echo ""
 
 # Delete the generated file
-rm -f ./dog_pool/thrift_hbase/hbase.go
+rm -f ./dog_pool/thrift/hbase.go
 
 # Re-Generate the file
 ./bin/generator \
-	-go.packagename="thrift_hbase" \
-	./dog_pool/thrift_hbase/hbase.thrift \
-	./dog_pool/thrift_hbase/hbase.go
+	-go.packagename="thrift" \
+	./dog_pool/thrift/hbase.thrift \
+	./dog_pool/thrift/hbase.go
 
 
 echo ""

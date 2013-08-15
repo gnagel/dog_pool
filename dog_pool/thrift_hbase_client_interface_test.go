@@ -8,29 +8,29 @@ package dog_pool
 
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
-import "./thrift_hbase"
+import "./thrift"
 
-func TestThriftHbaseClientInterfaceSpecs(t *testing.T) {
+func TestThriftClientInterfaceSpecs(t *testing.T) {
 	r := gospec.NewRunner()
-	r.AddSpec(ThriftHbaseClientInterfaceSpecs)
+	r.AddSpec(ThriftClientInterfaceSpecs)
 	gospec.MainGoTest(r, t)
 }
 
 // Helpers
-func ThriftHbaseClientInterfaceSpecs(c gospec.Context) {
-	c.Specify("[ThriftHbaseClientInterface] ThriftHbaseConnection satisfies ThriftHbaseClientInterface", func() {
-		connection := &ThriftHbaseConnection{}
+func ThriftClientInterfaceSpecs(c gospec.Context) {
+	c.Specify("[ThriftClientInterface] ThriftConnection satisfies ThriftClientInterface", func() {
+		connection := &ThriftConnection{}
 
 		// Wont' compile unless it implements the interface
-		var thrifthbase_interface ThriftHbaseClientInterface = connection
-		c.Expect(thrifthbase_interface, gospec.Satisfies, true)
+		var thrift_interface ThriftClientInterface = connection
+		c.Expect(thrift_interface, gospec.Satisfies, true)
 	})
 
-	c.Specify("[ThriftHbaseClientInterface] thrift.HbaseClient satisfies ThriftHbaseClientInterface", func() {
-		client := &thrift_hbase.HbaseClient{}
+	c.Specify("[ThriftClientInterface] thrift.HbaseClient satisfies ThriftClientInterface", func() {
+		client := &thrift.HbaseClient{}
 
 		// Wont' compile unless it implements the interface
-		var thrifthbase_interface ThriftHbaseClientInterface = client
-		c.Expect(thrifthbase_interface, gospec.Satisfies, true)
+		var thrift_interface ThriftClientInterface = client
+		c.Expect(thrift_interface, gospec.Satisfies, true)
 	})
 }

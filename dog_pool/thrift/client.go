@@ -2,7 +2,7 @@
 // Extensions for the generated hbase.go thrift API
 //
 
-package thrift_hbase
+package thrift
 
 import "net"
 import "net/rpc"
