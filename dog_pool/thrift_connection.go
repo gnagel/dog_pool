@@ -59,7 +59,7 @@ func makeAgressiveThriftConnection(url string, id string, timeout time.Duration,
 //
 //  ========================================
 //
-// ThriftClientInterface -and- thrift.Client implementation:
+// ThriftClientInterface -and- thrift.HbaseClient implementation:
 //
 //  ========================================
 //
@@ -156,32 +156,6 @@ func (p *ThriftConnection) GetReply() *thrift.Reply {
 //
 //  ========================================
 //
-
-//
-// [Depricated, use Append/GetReply above instead]
-//
-// Get a connection to Thrift
-//
-func (p *ThriftConnection) Client() (*thrift.Client, error) {
-	// Is a saved connection available?
-	if p.IsOpen() {
-		p.Logger.Trace("[ThriftConnection][Client][%s/%s] --> Found Opened Connection!", p.Url, p.Id)
-
-		// Return the connection
-		return p.client, nil
-	} else {
-		p.Logger.Warn("[ThriftConnection][Client][%s/%s] --> Found Closed Connection!", p.Url, p.Id)
-	}
-
-	// Open a new connection to thrift
-	if err := p.Open(); nil != err {
-		// Abort on errors
-		return nil, err
-	}
-
-	// Return the new thrift connection
-	return p.client, nil
-}
 
 //
 // Ping the server, opening the client connection if necessary
