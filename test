@@ -20,6 +20,21 @@ go get -u "github.com/jessevdk/go-flags"
 go get -u "github.com/bradfitz/gomemcache/memcache"
 go get -u "github.com/jteeuwen/go-bindata"
 go get -u "github.com/orfjackal/gospec/src/gospec"
+go get -u "github.com/samuel/go-thrift/thrift"
+go get -u "github.com/samuel/go-thrift/generator"
+go get -u "github.com/samuel/go-thrift/parser"
+
+
+echo ""
+echo ".................................................................."
+echo "Building Embedded Resources ..."
+echo ".................................................................."
+echo ""
+./bin/generator \
+	-go.packagename="thrift" \
+	./dog_pool/thrift/hbase.thrift \
+	./dog_pool/thrift/hbase.go
+
 
 echo ""
 echo ".................................................................."
@@ -28,6 +43,7 @@ echo ".................................................................."
 gofmt -s -w $GOPATH
 echo ""
 
+
 # Run the tests
 # This will run the "all_spec_test.go" suite of tests
 echo ""
@@ -35,7 +51,6 @@ echo ".................................................................."
 echo "Running tests ...................................................."
 echo ".................................................................."
 echo ""
-
 
 # 
 # Run the tests
