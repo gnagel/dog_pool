@@ -1,7 +1,7 @@
 //
-// Redis Client Interface
+// Thrift Client Interface
 //
-// Interface implemented by redis.Client and dog_pool.RedisConnection
+// Interface implemented by thrift.HbaseClient and dog_pool.ThriftConnection
 //
 
 package dog_pool

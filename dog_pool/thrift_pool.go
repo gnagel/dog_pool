@@ -1,5 +1,5 @@
 //
-// Redis Connection Pool written in GO
+// Thrift Connection Pool written in GO
 //
 
 package dog_pool
@@ -10,28 +10,28 @@ import "time"
 import "github.com/alecthomas/log4go"
 
 //
-// Redis Connection Pool wrapper
+// Thrift Connection Pool wrapper
 //
-type RedisConnectionPool struct {
+type ThriftConnectionPool struct {
 	Mode    ConnectionMode         "How should we prepare the connection pool?"
 	Size    int                    "(Max) Pool size"
-	Urls    []string               "Redis URLs to connect to"
+	Urls    []string               "Thrift URLs to connect to"
 	Logger  log4go.Logger          "Logger we are using in the connection pool"
-	Timeout time.Duration          "Timeout to use for connecting to Redis"
+	Timeout time.Duration          "Timeout to use for connecting to Thrift"
 	myPool  *ConnectionPoolWrapper "Connection Pool wrapper"
 }
 
 //
 // Is the pool open?
 //
-func (p *RedisConnectionPool) IsOpen() bool {
+func (p *ThriftConnectionPool) IsOpen() bool {
 	return nil != p.myPool
 }
 
 //
 // Is the pool closed?
 //
-func (p *RedisConnectionPool) IsClosed() bool {
+func (p *ThriftConnectionPool) IsClosed() bool {
 	return nil == p.myPool
 }
 
@@ -39,7 +39,7 @@ func (p *RedisConnectionPool) IsClosed() bool {
 // Length of the pool
 // Returns -1 if the pool is not open
 //
-func (p *RedisConnectionPool) Len() int {
+func (p *ThriftConnectionPool) Len() int {
 	if p.IsOpen() {
 		return p.myPool.Len()
 	}
@@ -49,7 +49,7 @@ func (p *RedisConnectionPool) Len() int {
 //
 // Open the connection pool
 //
-func (p *RedisConnectionPool) Open() error {
+func (p *ThriftConnectionPool) Open() error {
 	p.Close()
 
 	// Default to 15s timeout
@@ -65,19 +65,19 @@ func (p *RedisConnectionPool) Open() error {
 	switch p.Mode {
 	case LAZY:
 		// Create the factory
-		// DON'T Connect to Redis
+		// DON'T Connect to Thrift
 		// DON'T Test the connection
 		initfn = func() (interface{}, error) {
 			values := nextUrl()
-			return makeLazyRedisConnection(values[0], values[1], p.Timeout, &p.Logger)
+			return makeLazyThriftConnection(values[0], values[1], p.Timeout, &p.Logger)
 		}
 	case AGRESSIVE:
 		// Create the factory
-		// AND Connect to Redis
+		// AND Connect to Thrift
 		// AND Test the connection
 		initfn = func() (interface{}, error) {
 			values := nextUrl()
-			return makeAgressiveRedisConnection(values[0], values[1], p.Timeout, &p.Logger)
+			return makeAgressiveThriftConnection(values[0], values[1], p.Timeout, &p.Logger)
 		}
 		// No mode specified!
 	default:
@@ -102,7 +102,7 @@ func (p *RedisConnectionPool) Open() error {
 //
 // Close the connection pool
 //
-func (p *RedisConnectionPool) Close() {
+func (p *ThriftConnectionPool) Close() {
 	if p.IsClosed() {
 		return
 	}
@@ -126,15 +126,15 @@ func (p *RedisConnectionPool) Close() {
 }
 
 //
-// Get a RedisConnection from the pool
+// Get a ThriftConnection from the pool
 //
-func (p *RedisConnectionPool) Pop() (*RedisConnection, error) {
+func (p *ThriftConnectionPool) Pop() (*ThriftConnection, error) {
 	// Pop a connection from the pool
 	c := p.myPool.GetConnection()
 
 	// Return the connection
 	if c != nil {
-		return c.(*RedisConnection), nil
+		return c.(*ThriftConnection), nil
 	}
 
 	// Return an error when all connections are exhausted
@@ -142,8 +142,8 @@ func (p *RedisConnectionPool) Pop() (*RedisConnection, error) {
 }
 
 //
-// Return a RedisConnection
+// Return a ThriftConnection
 //
-func (p *RedisConnectionPool) Push(c *RedisConnection) {
+func (p *ThriftConnectionPool) Push(c *ThriftConnection) {
 	p.myPool.ReleaseConnection(c)
 }

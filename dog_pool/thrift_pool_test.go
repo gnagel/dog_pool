@@ -10,18 +10,18 @@ import "github.com/alecthomas/log4go"
 // NOTE: Use differient ports for each test!
 //       gospec runs the specs in parallel!
 //
-func TestRedisPoolSpecs(t *testing.T) {
+func TestThriftPoolSpecs(t *testing.T) {
 	r := gospec.NewRunner()
-	r.AddSpec(RedisPoolSpecs)
+	r.AddSpec(ThriftPoolSpecs)
 	gospec.MainGoTest(r, t)
 }
 
 // Helpers
-func RedisPoolSpecs(c gospec.Context) {
-	var redis_pool_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
+func ThriftPoolSpecs(c gospec.Context) {
+	var thrift_pool_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
 
-	c.Specify("[RedisConnectionPool] New Pool is not open", func() {
-		pool := RedisConnectionPool{Mode: AGRESSIVE, Size: 0, Urls: []string{}, Logger: redis_pool_logger}
+	c.Specify("[ThriftConnectionPool] New Pool is not open", func() {
+		pool := ThriftConnectionPool{Mode: AGRESSIVE, Size: 0, Urls: []string{}, Logger: thrift_pool_logger}
 		defer pool.Close()
 
 		c.Expect(pool.IsOpen(), gospec.Equals, false)
@@ -30,8 +30,8 @@ func RedisPoolSpecs(c gospec.Context) {
 		c.Expect(pool.Len(), gospec.Equals, -1)
 	})
 
-	c.Specify("[RedisConnectionPool] Opening a Pool with Undefined Mode has errors", func() {
-		pool := RedisConnectionPool{Mode: 0, Size: 0, Urls: []string{}, Logger: redis_pool_logger}
+	c.Specify("[ThriftConnectionPool] Opening a Pool with Undefined Mode has errors", func() {
+		pool := ThriftConnectionPool{Mode: 0, Size: 0, Urls: []string{}, Logger: thrift_pool_logger}
 		defer pool.Close()
 
 		// Should have an error
@@ -43,8 +43,8 @@ func RedisPoolSpecs(c gospec.Context) {
 		c.Expect(pool.Len(), gospec.Equals, -1)
 	})
 
-	c.Specify("[RedisConnectionPool] Size=0 pool is Empty", func() {
-		pool := RedisConnectionPool{Mode: AGRESSIVE, Size: 0, Urls: []string{}, Logger: redis_pool_logger}
+	c.Specify("[ThriftConnectionPool] Size=0 pool is Empty", func() {
+		pool := ThriftConnectionPool{Mode: AGRESSIVE, Size: 0, Urls: []string{}, Logger: thrift_pool_logger}
 		defer pool.Close()
 
 		// Shouldn't have any errors
@@ -59,8 +59,8 @@ func RedisPoolSpecs(c gospec.Context) {
 		c.Expect(pool.Len(), gospec.Equals, 0)
 	})
 
-	c.Specify("[RedisConnectionPool] Pop from empty pool returns error", func() {
-		pool := RedisConnectionPool{Mode: AGRESSIVE, Size: 0, Urls: []string{}, Logger: redis_pool_logger}
+	c.Specify("[ThriftConnectionPool] Pop from empty pool returns error", func() {
+		pool := ThriftConnectionPool{Mode: AGRESSIVE, Size: 0, Urls: []string{}, Logger: thrift_pool_logger}
 		defer pool.Close()
 
 		// Shouldn't have any errors
@@ -74,14 +74,14 @@ func RedisPoolSpecs(c gospec.Context) {
 		// Should be empty
 		c.Expect(pool.Len(), gospec.Equals, 0)
 
-		var connection *RedisConnection
+		var connection *ThriftConnection
 		connection, err = pool.Pop()
 		c.Expect(err, gospec.Equals, ErrNoConnectionsAvailable)
 		c.Expect(connection, gospec.Satisfies, nil == connection)
 	})
 
-	c.Specify("[RedisConnectionPool] Opening connection to Invalid Host/Port has errors", func() {
-		pool := RedisConnectionPool{Mode: AGRESSIVE, Size: 1, Urls: []string{"127.0.0.1:6991"}, Logger: redis_pool_logger}
+	c.Specify("[ThriftConnectionPool] Opening connection to Invalid Host/Port has errors", func() {
+		pool := ThriftConnectionPool{Mode: AGRESSIVE, Size: 1, Urls: []string{"127.0.0.1:6991"}, Logger: thrift_pool_logger}
 		defer pool.Close()
 
 		// Should have an error
@@ -93,12 +93,12 @@ func RedisPoolSpecs(c gospec.Context) {
 		c.Expect(pool.Len(), gospec.Equals, -1)
 	})
 
-	c.Specify("[RedisConnectionPool] Opening connection to Valid Host/Port has no errors", func() {
-		pool := RedisConnectionPool{Mode: AGRESSIVE, Size: 1, Urls: []string{"127.0.0.1:6992"}, Logger: redis_pool_logger}
+	c.Specify("[ThriftConnectionPool] Opening connection to Valid Host/Port has no errors", func() {
+		pool := ThriftConnectionPool{Mode: AGRESSIVE, Size: 1, Urls: []string{"127.0.0.1:6992"}, Logger: thrift_pool_logger}
 		defer pool.Close()
 
 		// Start the server ...
-		cmd := exec.Command("redis-server", "--port", "6992")
+		cmd := exec.Command("thrift-server", "--port", "6992")
 		err := cmd.Start()
 		c.Expect(err, gospec.Equals, nil)
 		if err != nil {
@@ -117,12 +117,12 @@ func RedisPoolSpecs(c gospec.Context) {
 		c.Expect(pool.IsClosed(), gospec.Satisfies, pool.IsOpen() != pool.IsClosed())
 	})
 
-	c.Specify("[RedisConnectionPool] 10x AGRESSIVE Pool Pops 10x open connections", func() {
-		pool := RedisConnectionPool{Mode: AGRESSIVE, Size: 10, Urls: []string{"127.0.0.1:6993"}, Logger: redis_pool_logger}
+	c.Specify("[ThriftConnectionPool] 10x AGRESSIVE Pool Pops 10x open connections", func() {
+		pool := ThriftConnectionPool{Mode: AGRESSIVE, Size: 10, Urls: []string{"127.0.0.1:6993"}, Logger: thrift_pool_logger}
 		defer pool.Close()
 
 		// Start the server ...
-		cmd := exec.Command("redis-server", "--port", "6993")
+		cmd := exec.Command("thrift-server", "--port", "6993")
 		err := cmd.Start()
 		c.Expect(err, gospec.Equals, nil)
 		if err != nil {
@@ -138,7 +138,7 @@ func RedisPoolSpecs(c gospec.Context) {
 		c.Expect(pool.IsOpen(), gospec.Equals, true)
 
 		// Has 10x connections
-		var connection *RedisConnection
+		var connection *ThriftConnection
 
 		for count := 10; count > 0; count-- {
 			// Count decrements when the connection is pop'd
@@ -153,12 +153,12 @@ func RedisPoolSpecs(c gospec.Context) {
 		}
 	})
 
-	c.Specify("[RedisConnectionPool] 10x LAZY Pool Pops 10x closed connections", func() {
-		pool := RedisConnectionPool{Mode: LAZY, Size: 10, Urls: []string{"127.0.0.1:6994"}, Logger: redis_pool_logger}
+	c.Specify("[ThriftConnectionPool] 10x LAZY Pool Pops 10x closed connections", func() {
+		pool := ThriftConnectionPool{Mode: LAZY, Size: 10, Urls: []string{"127.0.0.1:6994"}, Logger: thrift_pool_logger}
 		defer pool.Close()
 
 		// Start the server ...
-		cmd := exec.Command("redis-server", "--port", "6994")
+		cmd := exec.Command("thrift-server", "--port", "6994")
 		err := cmd.Start()
 		c.Expect(err, gospec.Equals, nil)
 		if err != nil {
@@ -174,7 +174,7 @@ func RedisPoolSpecs(c gospec.Context) {
 		c.Expect(pool.IsOpen(), gospec.Equals, true)
 
 		// Has 10x connections
-		var connection *RedisConnection
+		var connection *ThriftConnection
 
 		for count := 10; count > 0; count-- {
 			// Count decrements when the connection is pop'd

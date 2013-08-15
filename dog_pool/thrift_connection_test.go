@@ -10,18 +10,18 @@ import "github.com/alecthomas/log4go"
 // NOTE: Use differient ports for each test!
 //       gospec runs the specs in parallel!
 //
-func TestRedisConnectionSpecs(t *testing.T) {
+func TestThriftConnectionSpecs(t *testing.T) {
 	r := gospec.NewRunner()
-	r.AddSpec(RedisConnectionSpecs)
+	r.AddSpec(ThriftConnectionSpecs)
 	gospec.MainGoTest(r, t)
 }
 
 // Helpers
-func RedisConnectionSpecs(c gospec.Context) {
-	var redis_connection_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
+func ThriftConnectionSpecs(c gospec.Context) {
+	var thrift_connection_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
 
-	c.Specify("[RedisConnection] New connection is not open", func() {
-		connection := RedisConnection{Url: "127.0.0.1:6990", Logger: &redis_connection_logger}
+	c.Specify("[ThriftConnection] New connection is not open", func() {
+		connection := ThriftConnection{Url: "127.0.0.1:6990", Logger: &thrift_connection_logger}
 		defer connection.Close()
 
 		open := connection.IsOpen()
@@ -33,8 +33,8 @@ func RedisConnectionSpecs(c gospec.Context) {
 		c.Expect(closed, gospec.Satisfies, open != closed)
 	})
 
-	c.Specify("[RedisConnection] Opening connection to Invalid Host/Port has errors", func() {
-		connection := RedisConnection{Url: "127.0.0.1:6991", Logger: &redis_connection_logger}
+	c.Specify("[ThriftConnection] Opening connection to Invalid Host/Port has errors", func() {
+		connection := ThriftConnection{Url: "127.0.0.1:6991", Logger: &thrift_connection_logger}
 		defer connection.Close()
 
 		// The server is not running ...
@@ -46,12 +46,12 @@ func RedisConnectionSpecs(c gospec.Context) {
 		c.Expect(closed, gospec.Equals, true)
 	})
 
-	c.Specify("[RedisConnection] Opening connection to Valid Host/Port has no errors", func() {
-		connection := RedisConnection{Url: "127.0.0.1:6992", Logger: &redis_connection_logger}
+	c.Specify("[ThriftConnection] Opening connection to Valid Host/Port has no errors", func() {
+		connection := ThriftConnection{Url: "127.0.0.1:6992", Logger: &thrift_connection_logger}
 		defer connection.Close()
 
 		// Start the server ...
-		cmd := exec.Command("redis-server", "--port", "6992")
+		cmd := exec.Command("thrift-server", "--port", "6992")
 		err := cmd.Start()
 		c.Expect(err, gospec.Equals, nil)
 		if err != nil {
@@ -72,12 +72,12 @@ func RedisConnectionSpecs(c gospec.Context) {
 		c.Expect(closed, gospec.Satisfies, open != closed)
 	})
 
-	c.Specify("[RedisConnection] Ping (-->Cmd-->Append+GetReply) (re-)opens the connection automatically", func() {
-		connection := RedisConnection{Url: "127.0.0.1:6993", Logger: &redis_connection_logger}
+	c.Specify("[ThriftConnection] Ping (-->Cmd-->Append+GetReply) (re-)opens the connection automatically", func() {
+		connection := ThriftConnection{Url: "127.0.0.1:6993", Logger: &thrift_connection_logger}
 		defer connection.Close()
 
 		// Start the server ...
-		cmd := exec.Command("redis-server", "--port", "6993")
+		cmd := exec.Command("thrift-server", "--port", "6993")
 		err := cmd.Start()
 		c.Expect(err, gospec.Equals, nil)
 		if err != nil {
@@ -109,12 +109,12 @@ func RedisConnectionSpecs(c gospec.Context) {
 		c.Expect(connection.IsOpen(), gospec.Equals, true)
 	})
 
-	c.Specify("[RedisConnection] Ping to invalid Host/Port has errors", func() {
-		connection := RedisConnection{Url: "127.0.0.1:6994", Logger: &redis_connection_logger}
+	c.Specify("[ThriftConnection] Ping to invalid Host/Port has errors", func() {
+		connection := ThriftConnection{Url: "127.0.0.1:6994", Logger: &thrift_connection_logger}
 		defer connection.Close()
 
 		// Start the server ...
-		cmd := exec.Command("redis-server", "--port", "6994")
+		cmd := exec.Command("thrift-server", "--port", "6994")
 		err := cmd.Start()
 		c.Expect(err, gospec.Equals, nil)
 		if err != nil {
@@ -146,7 +146,7 @@ func RedisConnectionSpecs(c gospec.Context) {
 		c.Expect(connection.IsClosed(), gospec.Equals, true)
 
 		// Re-Start the server ...
-		cmd = exec.Command("redis-server", "--port", "6994")
+		cmd = exec.Command("thrift-server", "--port", "6994")
 		err = cmd.Start()
 		c.Expect(err, gospec.Equals, nil)
 		if err != nil {
