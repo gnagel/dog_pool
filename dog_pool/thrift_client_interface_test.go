@@ -8,7 +8,7 @@ package dog_pool
 
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
-import goh_hbase "github.com/sdming/goh"
+import "github.com/sdming/goh"
 
 func TestThriftClientInterfaceSpecs(t *testing.T) {
 	r := gospec.NewRunner()

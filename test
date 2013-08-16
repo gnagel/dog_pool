@@ -28,26 +28,9 @@ go get "github.com/sdming/goh"
 
 echo ""
 echo ".................................................................."
-echo "Building Embedded Resources ..."
-echo ".................................................................."
-echo ""
-
-# Delete the generated file
-rm -f ./dog_pool/thrift/hbase.go
-
-# Re-Generate the file
-./bin/generator \
-	-go.packagename="thrift" \
-	-go.binarystring=true \
-	./dog_pool/thrift/hbase.thrift \
-	./dog_pool/thrift/hbase.go
-
-
-echo ""
-echo ".................................................................."
 echo "Formatting the code .............................................."
 echo ".................................................................."
-gofmt -s -w $GOPATH
+gofmt -s -w $GOPATH/dog_pool
 echo ""
 
 
@@ -62,7 +45,7 @@ echo ""
 # 
 # Run the tests
 # 
-go test -v ./dog_pool/thrift/...
+go test -v ./dog_pool/...
 
 echo ""
 echo ".................................................................."
