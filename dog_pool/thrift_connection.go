@@ -62,7 +62,7 @@ func makeAgressiveThriftConnection(url string, id string, timeout time.Duration,
 //  ========================================
 //
 
-func (p *ThriftConnection) AtomicIncrement(TableName []byte, Row []byte, Column []byte, Value int64) (int64, error) {
+func (p *ThriftConnection) AtomicIncrement(TableName string, Row string, Column string, Value int64) (int64, error) {
 	if err := p.SafeOpen(); nil != err {
 		return 0, err
 	}
@@ -76,7 +76,7 @@ func (p *ThriftConnection) AtomicIncrement(TableName []byte, Row []byte, Column 
 	return output, err
 }
 
-func (p *ThriftConnection) Compact(TableNameOrRegionName []byte) error {
+func (p *ThriftConnection) Compact(TableNameOrRegionName string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -90,7 +90,7 @@ func (p *ThriftConnection) Compact(TableNameOrRegionName []byte) error {
 	return err
 }
 
-func (p *ThriftConnection) CreateTable(TableName []byte, ColumnFamilies []*thrift.ColumnDescriptor) error {
+func (p *ThriftConnection) CreateTable(TableName string, ColumnFamilies []*thrift.ColumnDescriptor) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -104,7 +104,7 @@ func (p *ThriftConnection) CreateTable(TableName []byte, ColumnFamilies []*thrif
 	return err
 }
 
-func (p *ThriftConnection) DeleteAll(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) error {
+func (p *ThriftConnection) DeleteAll(TableName string, Row string, Column string, Attributes map[string]string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -118,7 +118,7 @@ func (p *ThriftConnection) DeleteAll(TableName []byte, Row []byte, Column []byte
 	return err
 }
 
-func (p *ThriftConnection) DeleteAllRow(TableName []byte, Row []byte, Attributes map[string][]byte) error {
+func (p *ThriftConnection) DeleteAllRow(TableName string, Row string, Attributes map[string]string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -132,7 +132,7 @@ func (p *ThriftConnection) DeleteAllRow(TableName []byte, Row []byte, Attributes
 	return err
 }
 
-func (p *ThriftConnection) DeleteAllRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) error {
+func (p *ThriftConnection) DeleteAllRowTs(TableName string, Row string, Timestamp int64, Attributes map[string]string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -146,7 +146,7 @@ func (p *ThriftConnection) DeleteAllRowTs(TableName []byte, Row []byte, Timestam
 	return err
 }
 
-func (p *ThriftConnection) DeleteAllTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, Attributes map[string][]byte) error {
+func (p *ThriftConnection) DeleteAllTs(TableName string, Row string, Column string, Timestamp int64, Attributes map[string]string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -160,7 +160,7 @@ func (p *ThriftConnection) DeleteAllTs(TableName []byte, Row []byte, Column []by
 	return err
 }
 
-func (p *ThriftConnection) DeleteTable(TableName []byte) error {
+func (p *ThriftConnection) DeleteTable(TableName string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -174,7 +174,7 @@ func (p *ThriftConnection) DeleteTable(TableName []byte) error {
 	return err
 }
 
-func (p *ThriftConnection) DisableTable(TableName []byte) error {
+func (p *ThriftConnection) DisableTable(TableName string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -188,7 +188,7 @@ func (p *ThriftConnection) DisableTable(TableName []byte) error {
 	return err
 }
 
-func (p *ThriftConnection) EnableTable(TableName []byte) error {
+func (p *ThriftConnection) EnableTable(TableName string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -202,7 +202,7 @@ func (p *ThriftConnection) EnableTable(TableName []byte) error {
 	return err
 }
 
-func (p *ThriftConnection) Get(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) ([]*thrift.TCell, error) {
+func (p *ThriftConnection) Get(TableName string, Row string, Column string, Attributes map[string]string) ([]*thrift.TCell, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ func (p *ThriftConnection) Get(TableName []byte, Row []byte, Column []byte, Attr
 	return output, err
 }
 
-func (p *ThriftConnection) GetColumnDescriptors(TableName []byte) (map[string]*thrift.ColumnDescriptor, error) {
+func (p *ThriftConnection) GetColumnDescriptors(TableName string) (map[string]*thrift.ColumnDescriptor, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func (p *ThriftConnection) GetColumnDescriptors(TableName []byte) (map[string]*t
 	return output, err
 }
 
-func (p *ThriftConnection) GetRegionInfo(Row []byte) (*thrift.TRegionInfo, error) {
+func (p *ThriftConnection) GetRegionInfo(Row string) (*thrift.TRegionInfo, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func (p *ThriftConnection) GetRegionInfo(Row []byte) (*thrift.TRegionInfo, error
 	return output, err
 }
 
-func (p *ThriftConnection) GetRow(TableName []byte, Row []byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+func (p *ThriftConnection) GetRow(TableName string, Row string, Attributes map[string]string) ([]*thrift.TRowResult, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -258,7 +258,7 @@ func (p *ThriftConnection) GetRow(TableName []byte, Row []byte, Attributes map[s
 	return output, err
 }
 
-func (p *ThriftConnection) GetRowOrBefore(TableName []byte, Row []byte, Family []byte) ([]*thrift.TCell, error) {
+func (p *ThriftConnection) GetRowOrBefore(TableName string, Row string, Family string) ([]*thrift.TCell, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -272,7 +272,7 @@ func (p *ThriftConnection) GetRowOrBefore(TableName []byte, Row []byte, Family [
 	return output, err
 }
 
-func (p *ThriftConnection) GetRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+func (p *ThriftConnection) GetRowTs(TableName string, Row string, Timestamp int64, Attributes map[string]string) ([]*thrift.TRowResult, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -286,7 +286,7 @@ func (p *ThriftConnection) GetRowTs(TableName []byte, Row []byte, Timestamp int6
 	return output, err
 }
 
-func (p *ThriftConnection) GetRowWithColumns(TableName []byte, Row []byte, Columns [][]byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+func (p *ThriftConnection) GetRowWithColumns(TableName string, Row string, Columns []string, Attributes map[string]string) ([]*thrift.TRowResult, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -300,7 +300,7 @@ func (p *ThriftConnection) GetRowWithColumns(TableName []byte, Row []byte, Colum
 	return output, err
 }
 
-func (p *ThriftConnection) GetRowWithColumnsTs(TableName []byte, Row []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+func (p *ThriftConnection) GetRowWithColumnsTs(TableName string, Row string, Columns []string, Timestamp int64, Attributes map[string]string) ([]*thrift.TRowResult, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -314,7 +314,7 @@ func (p *ThriftConnection) GetRowWithColumnsTs(TableName []byte, Row []byte, Col
 	return output, err
 }
 
-func (p *ThriftConnection) GetRows(TableName []byte, Rows [][]byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+func (p *ThriftConnection) GetRows(TableName string, Rows []string, Attributes map[string]string) ([]*thrift.TRowResult, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -328,7 +328,7 @@ func (p *ThriftConnection) GetRows(TableName []byte, Rows [][]byte, Attributes m
 	return output, err
 }
 
-func (p *ThriftConnection) GetRowsTs(TableName []byte, Rows [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+func (p *ThriftConnection) GetRowsTs(TableName string, Rows []string, Timestamp int64, Attributes map[string]string) ([]*thrift.TRowResult, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -342,7 +342,7 @@ func (p *ThriftConnection) GetRowsTs(TableName []byte, Rows [][]byte, Timestamp 
 	return output, err
 }
 
-func (p *ThriftConnection) GetRowsWithColumns(TableName []byte, Rows [][]byte, Columns [][]byte, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+func (p *ThriftConnection) GetRowsWithColumns(TableName string, Rows []string, Columns []string, Attributes map[string]string) ([]*thrift.TRowResult, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -356,7 +356,7 @@ func (p *ThriftConnection) GetRowsWithColumns(TableName []byte, Rows [][]byte, C
 	return output, err
 }
 
-func (p *ThriftConnection) GetRowsWithColumnsTs(TableName []byte, Rows [][]byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*thrift.TRowResult, error) {
+func (p *ThriftConnection) GetRowsWithColumnsTs(TableName string, Rows []string, Columns []string, Timestamp int64, Attributes map[string]string) ([]*thrift.TRowResult, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -370,7 +370,7 @@ func (p *ThriftConnection) GetRowsWithColumnsTs(TableName []byte, Rows [][]byte,
 	return output, err
 }
 
-func (p *ThriftConnection) GetTableNames() ([][]byte, error) {
+func (p *ThriftConnection) GetTableNames() ([]string, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -384,7 +384,7 @@ func (p *ThriftConnection) GetTableNames() ([][]byte, error) {
 	return output, err
 }
 
-func (p *ThriftConnection) GetTableRegions(TableName []byte) ([]*thrift.TRegionInfo, error) {
+func (p *ThriftConnection) GetTableRegions(TableName string) ([]*thrift.TRegionInfo, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -398,7 +398,7 @@ func (p *ThriftConnection) GetTableRegions(TableName []byte) ([]*thrift.TRegionI
 	return output, err
 }
 
-func (p *ThriftConnection) GetVer(TableName []byte, Row []byte, Column []byte, NumVersions int32, Attributes map[string][]byte) ([]*thrift.TCell, error) {
+func (p *ThriftConnection) GetVer(TableName string, Row string, Column string, NumVersions int32, Attributes map[string]string) ([]*thrift.TCell, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -412,7 +412,7 @@ func (p *ThriftConnection) GetVer(TableName []byte, Row []byte, Column []byte, N
 	return output, err
 }
 
-func (p *ThriftConnection) GetVerTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, NumVersions int32, Attributes map[string][]byte) ([]*thrift.TCell, error) {
+func (p *ThriftConnection) GetVerTs(TableName string, Row string, Column string, Timestamp int64, NumVersions int32, Attributes map[string]string) ([]*thrift.TCell, error) {
 	if err := p.SafeOpen(); nil != err {
 		return nil, err
 	}
@@ -454,7 +454,7 @@ func (p *ThriftConnection) IncrementRows(Increments []*thrift.TIncrement) error 
 	return err
 }
 
-func (p *ThriftConnection) IsTableEnabled(TableName []byte) (bool, error) {
+func (p *ThriftConnection) IsTableEnabled(TableName string) (bool, error) {
 	if err := p.SafeOpen(); nil != err {
 		return false, err
 	}
@@ -468,7 +468,7 @@ func (p *ThriftConnection) IsTableEnabled(TableName []byte) (bool, error) {
 	return output, err
 }
 
-func (p *ThriftConnection) MajorCompact(TableNameOrRegionName []byte) error {
+func (p *ThriftConnection) MajorCompact(TableNameOrRegionName string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -482,7 +482,7 @@ func (p *ThriftConnection) MajorCompact(TableNameOrRegionName []byte) error {
 	return err
 }
 
-func (p *ThriftConnection) MutateRow(TableName []byte, Row []byte, Mutations []*thrift.Mutation, Attributes map[string][]byte) error {
+func (p *ThriftConnection) MutateRow(TableName string, Row string, Mutations []*thrift.Mutation, Attributes map[string]string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -496,7 +496,7 @@ func (p *ThriftConnection) MutateRow(TableName []byte, Row []byte, Mutations []*
 	return err
 }
 
-func (p *ThriftConnection) MutateRowTs(TableName []byte, Row []byte, Mutations []*thrift.Mutation, Timestamp int64, Attributes map[string][]byte) error {
+func (p *ThriftConnection) MutateRowTs(TableName string, Row string, Mutations []*thrift.Mutation, Timestamp int64, Attributes map[string]string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -510,7 +510,7 @@ func (p *ThriftConnection) MutateRowTs(TableName []byte, Row []byte, Mutations [
 	return err
 }
 
-func (p *ThriftConnection) MutateRows(TableName []byte, RowBatches []*thrift.BatchMutation, Attributes map[string][]byte) error {
+func (p *ThriftConnection) MutateRows(TableName string, RowBatches []*thrift.BatchMutation, Attributes map[string]string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -524,7 +524,7 @@ func (p *ThriftConnection) MutateRows(TableName []byte, RowBatches []*thrift.Bat
 	return err
 }
 
-func (p *ThriftConnection) MutateRowsTs(TableName []byte, RowBatches []*thrift.BatchMutation, Timestamp int64, Attributes map[string][]byte) error {
+func (p *ThriftConnection) MutateRowsTs(TableName string, RowBatches []*thrift.BatchMutation, Timestamp int64, Attributes map[string]string) error {
 	if err := p.SafeOpen(); nil != err {
 		return err
 	}
@@ -580,7 +580,7 @@ func (p *ThriftConnection) ScannerGetList(Id int32, NbRows int32) ([]*thrift.TRo
 	return output, err
 }
 
-func (p *ThriftConnection) ScannerOpen(TableName []byte, StartRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+func (p *ThriftConnection) ScannerOpen(TableName string, StartRow string, Columns []string, Attributes map[string]string) (int32, error) {
 	if err := p.SafeOpen(); nil != err {
 		return 0, err
 	}
@@ -594,7 +594,7 @@ func (p *ThriftConnection) ScannerOpen(TableName []byte, StartRow []byte, Column
 	return output, err
 }
 
-func (p *ThriftConnection) ScannerOpenTs(TableName []byte, StartRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error) {
+func (p *ThriftConnection) ScannerOpenTs(TableName string, StartRow string, Columns []string, Timestamp int64, Attributes map[string]string) (int32, error) {
 	if err := p.SafeOpen(); nil != err {
 		return 0, err
 	}
@@ -608,7 +608,7 @@ func (p *ThriftConnection) ScannerOpenTs(TableName []byte, StartRow []byte, Colu
 	return output, err
 }
 
-func (p *ThriftConnection) ScannerOpenWithPrefix(TableName []byte, StartAndPrefix []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+func (p *ThriftConnection) ScannerOpenWithPrefix(TableName string, StartAndPrefix string, Columns []string, Attributes map[string]string) (int32, error) {
 	if err := p.SafeOpen(); nil != err {
 		return 0, err
 	}
@@ -622,7 +622,7 @@ func (p *ThriftConnection) ScannerOpenWithPrefix(TableName []byte, StartAndPrefi
 	return output, err
 }
 
-func (p *ThriftConnection) ScannerOpenWithScan(TableName []byte, Scan *thrift.TScan, Attributes map[string][]byte) (int32, error) {
+func (p *ThriftConnection) ScannerOpenWithScan(TableName string, Scan *thrift.TScan, Attributes map[string]string) (int32, error) {
 	if err := p.SafeOpen(); nil != err {
 		return 0, err
 	}
@@ -636,7 +636,7 @@ func (p *ThriftConnection) ScannerOpenWithScan(TableName []byte, Scan *thrift.TS
 	return output, err
 }
 
-func (p *ThriftConnection) ScannerOpenWithStop(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+func (p *ThriftConnection) ScannerOpenWithStop(TableName string, StartRow string, StopRow string, Columns []string, Attributes map[string]string) (int32, error) {
 	if err := p.SafeOpen(); nil != err {
 		return 0, err
 	}
@@ -650,7 +650,7 @@ func (p *ThriftConnection) ScannerOpenWithStop(TableName []byte, StartRow []byte
 	return output, err
 }
 
-func (p *ThriftConnection) ScannerOpenWithStopTs(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error) {
+func (p *ThriftConnection) ScannerOpenWithStopTs(TableName string, StartRow string, StopRow string, Columns []string, Timestamp int64, Attributes map[string]string) (int32, error) {
 	if err := p.SafeOpen(); nil != err {
 		return 0, err
 	}

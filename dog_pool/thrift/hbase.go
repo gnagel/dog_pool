@@ -7,12 +7,12 @@ import (
 )
 
 type BatchMutation struct {
-	Row       []byte      `thrift:"1,required" json:"row"`
+	Row       string      `thrift:"1,required" json:"row"`
 	Mutations []*Mutation `thrift:"2,required" json:"mutations"`
 }
 
 type ColumnDescriptor struct {
-	Name                  []byte `thrift:"1,required" json:"name"`
+	Name                  string `thrift:"1,required" json:"name"`
 	MaxVersions           int32  `thrift:"2,required" json:"maxVersions"`
 	Compression           string `thrift:"3,required" json:"compression"`
 	InMemory              bool   `thrift:"4,required" json:"inMemory"`
@@ -25,45 +25,45 @@ type ColumnDescriptor struct {
 
 type Mutation struct {
 	IsDelete   bool   `thrift:"1,required" json:"isDelete"`
-	Column     []byte `thrift:"2,required" json:"column"`
-	Value      []byte `thrift:"3,required" json:"value"`
+	Column     string `thrift:"2,required" json:"column"`
+	Value      string `thrift:"3,required" json:"value"`
 	WriteToWAL bool   `thrift:"4,required" json:"writeToWAL"`
 }
 
 type TCell struct {
-	Value     []byte `thrift:"1,required" json:"value"`
+	Value     string `thrift:"1,required" json:"value"`
 	Timestamp int64  `thrift:"2,required" json:"timestamp"`
 }
 
 type TIncrement struct {
-	Table   []byte `thrift:"1,required" json:"table"`
-	Row     []byte `thrift:"2,required" json:"row"`
-	Column  []byte `thrift:"3,required" json:"column"`
+	Table   string `thrift:"1,required" json:"table"`
+	Row     string `thrift:"2,required" json:"row"`
+	Column  string `thrift:"3,required" json:"column"`
 	Ammount int64  `thrift:"4,required" json:"ammount"`
 }
 
 type TRegionInfo struct {
-	StartKey   []byte `thrift:"1,required" json:"startKey"`
-	EndKey     []byte `thrift:"2,required" json:"endKey"`
+	StartKey   string `thrift:"1,required" json:"startKey"`
+	EndKey     string `thrift:"2,required" json:"endKey"`
 	Id         int64  `thrift:"3,required" json:"id"`
-	Name       []byte `thrift:"4,required" json:"name"`
+	Name       string `thrift:"4,required" json:"name"`
 	Version    byte   `thrift:"5,required" json:"version"`
-	ServerName []byte `thrift:"6,required" json:"serverName"`
+	ServerName string `thrift:"6,required" json:"serverName"`
 	Port       int32  `thrift:"7,required" json:"port"`
 }
 
 type TRowResult struct {
-	Row     []byte            `thrift:"1,required" json:"row"`
+	Row     string            `thrift:"1,required" json:"row"`
 	Columns map[string]*TCell `thrift:"2,required" json:"columns"`
 }
 
 type TScan struct {
-	StartRow     []byte   `thrift:"1" json:"startRow"`
-	StopRow      []byte   `thrift:"2" json:"stopRow"`
+	StartRow     string   `thrift:"1" json:"startRow"`
+	StopRow      string   `thrift:"2" json:"stopRow"`
 	Timestamp    int64    `thrift:"3" json:"timestamp"`
-	Columns      [][]byte `thrift:"4" json:"columns"`
+	Columns      []string `thrift:"4" json:"columns"`
 	Caching      int32    `thrift:"5" json:"caching"`
-	FilterString []byte   `thrift:"6" json:"filterString"`
+	FilterString string   `thrift:"6" json:"filterString"`
 }
 
 type AlreadyExists struct {
@@ -95,49 +95,49 @@ type RPCClient interface {
 }
 
 type Hbase interface {
-	AtomicIncrement(TableName []byte, Row []byte, Column []byte, Value int64) (int64, error)
-	Compact(TableNameOrRegionName []byte) error
-	CreateTable(TableName []byte, ColumnFamilies []*ColumnDescriptor) error
-	DeleteAll(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) error
-	DeleteAllRow(TableName []byte, Row []byte, Attributes map[string][]byte) error
-	DeleteAllRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) error
-	DeleteAllTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, Attributes map[string][]byte) error
-	DeleteTable(TableName []byte) error
-	DisableTable(TableName []byte) error
-	EnableTable(TableName []byte) error
-	Get(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) ([]*TCell, error)
-	GetColumnDescriptors(TableName []byte) (map[string]*ColumnDescriptor, error)
-	GetRegionInfo(Row []byte) (*TRegionInfo, error)
-	GetRow(TableName []byte, Row []byte, Attributes map[string][]byte) ([]*TRowResult, error)
-	GetRowOrBefore(TableName []byte, Row []byte, Family []byte) ([]*TCell, error)
-	GetRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) ([]*TRowResult, error)
-	GetRowWithColumns(TableName []byte, Row []byte, Columns [][]byte, Attributes map[string][]byte) ([]*TRowResult, error)
-	GetRowWithColumnsTs(TableName []byte, Row []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*TRowResult, error)
-	GetRows(TableName []byte, Rows [][]byte, Attributes map[string][]byte) ([]*TRowResult, error)
-	GetRowsTs(TableName []byte, Rows [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*TRowResult, error)
-	GetRowsWithColumns(TableName []byte, Rows [][]byte, Columns [][]byte, Attributes map[string][]byte) ([]*TRowResult, error)
-	GetRowsWithColumnsTs(TableName []byte, Rows [][]byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*TRowResult, error)
-	GetTableNames() ([][]byte, error)
-	GetTableRegions(TableName []byte) ([]*TRegionInfo, error)
-	GetVer(TableName []byte, Row []byte, Column []byte, NumVersions int32, Attributes map[string][]byte) ([]*TCell, error)
-	GetVerTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, NumVersions int32, Attributes map[string][]byte) ([]*TCell, error)
+	AtomicIncrement(TableName string, Row string, Column string, Value int64) (int64, error)
+	Compact(TableNameOrRegionName string) error
+	CreateTable(TableName string, ColumnFamilies []*ColumnDescriptor) error
+	DeleteAll(TableName string, Row string, Column string, Attributes map[string]string) error
+	DeleteAllRow(TableName string, Row string, Attributes map[string]string) error
+	DeleteAllRowTs(TableName string, Row string, Timestamp int64, Attributes map[string]string) error
+	DeleteAllTs(TableName string, Row string, Column string, Timestamp int64, Attributes map[string]string) error
+	DeleteTable(TableName string) error
+	DisableTable(TableName string) error
+	EnableTable(TableName string) error
+	Get(TableName string, Row string, Column string, Attributes map[string]string) ([]*TCell, error)
+	GetColumnDescriptors(TableName string) (map[string]*ColumnDescriptor, error)
+	GetRegionInfo(Row string) (*TRegionInfo, error)
+	GetRow(TableName string, Row string, Attributes map[string]string) ([]*TRowResult, error)
+	GetRowOrBefore(TableName string, Row string, Family string) ([]*TCell, error)
+	GetRowTs(TableName string, Row string, Timestamp int64, Attributes map[string]string) ([]*TRowResult, error)
+	GetRowWithColumns(TableName string, Row string, Columns []string, Attributes map[string]string) ([]*TRowResult, error)
+	GetRowWithColumnsTs(TableName string, Row string, Columns []string, Timestamp int64, Attributes map[string]string) ([]*TRowResult, error)
+	GetRows(TableName string, Rows []string, Attributes map[string]string) ([]*TRowResult, error)
+	GetRowsTs(TableName string, Rows []string, Timestamp int64, Attributes map[string]string) ([]*TRowResult, error)
+	GetRowsWithColumns(TableName string, Rows []string, Columns []string, Attributes map[string]string) ([]*TRowResult, error)
+	GetRowsWithColumnsTs(TableName string, Rows []string, Columns []string, Timestamp int64, Attributes map[string]string) ([]*TRowResult, error)
+	GetTableNames() ([]string, error)
+	GetTableRegions(TableName string) ([]*TRegionInfo, error)
+	GetVer(TableName string, Row string, Column string, NumVersions int32, Attributes map[string]string) ([]*TCell, error)
+	GetVerTs(TableName string, Row string, Column string, Timestamp int64, NumVersions int32, Attributes map[string]string) ([]*TCell, error)
 	Increment(Increment *TIncrement) error
 	IncrementRows(Increments []*TIncrement) error
-	IsTableEnabled(TableName []byte) (bool, error)
-	MajorCompact(TableNameOrRegionName []byte) error
-	MutateRow(TableName []byte, Row []byte, Mutations []*Mutation, Attributes map[string][]byte) error
-	MutateRowTs(TableName []byte, Row []byte, Mutations []*Mutation, Timestamp int64, Attributes map[string][]byte) error
-	MutateRows(TableName []byte, RowBatches []*BatchMutation, Attributes map[string][]byte) error
-	MutateRowsTs(TableName []byte, RowBatches []*BatchMutation, Timestamp int64, Attributes map[string][]byte) error
+	IsTableEnabled(TableName string) (bool, error)
+	MajorCompact(TableNameOrRegionName string) error
+	MutateRow(TableName string, Row string, Mutations []*Mutation, Attributes map[string]string) error
+	MutateRowTs(TableName string, Row string, Mutations []*Mutation, Timestamp int64, Attributes map[string]string) error
+	MutateRows(TableName string, RowBatches []*BatchMutation, Attributes map[string]string) error
+	MutateRowsTs(TableName string, RowBatches []*BatchMutation, Timestamp int64, Attributes map[string]string) error
 	ScannerClose(Id int32) error
 	ScannerGet(Id int32) ([]*TRowResult, error)
 	ScannerGetList(Id int32, NbRows int32) ([]*TRowResult, error)
-	ScannerOpen(TableName []byte, StartRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error)
-	ScannerOpenTs(TableName []byte, StartRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error)
-	ScannerOpenWithPrefix(TableName []byte, StartAndPrefix []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error)
-	ScannerOpenWithScan(TableName []byte, Scan *TScan, Attributes map[string][]byte) (int32, error)
-	ScannerOpenWithStop(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error)
-	ScannerOpenWithStopTs(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error)
+	ScannerOpen(TableName string, StartRow string, Columns []string, Attributes map[string]string) (int32, error)
+	ScannerOpenTs(TableName string, StartRow string, Columns []string, Timestamp int64, Attributes map[string]string) (int32, error)
+	ScannerOpenWithPrefix(TableName string, StartAndPrefix string, Columns []string, Attributes map[string]string) (int32, error)
+	ScannerOpenWithScan(TableName string, Scan *TScan, Attributes map[string]string) (int32, error)
+	ScannerOpenWithStop(TableName string, StartRow string, StopRow string, Columns []string, Attributes map[string]string) (int32, error)
+	ScannerOpenWithStopTs(TableName string, StartRow string, StopRow string, Columns []string, Timestamp int64, Attributes map[string]string) (int32, error)
 }
 
 type HbaseServer struct {
@@ -631,9 +631,9 @@ func (s *HbaseServer) ScannerOpenWithStopTs(req *HbaseScannerOpenWithStopTsReque
 }
 
 type HbaseAtomicIncrementRequest struct {
-	TableName []byte `thrift:"1,required" json:"tableName"`
-	Row       []byte `thrift:"2,required" json:"row"`
-	Column    []byte `thrift:"3,required" json:"column"`
+	TableName string `thrift:"1,required" json:"tableName"`
+	Row       string `thrift:"2,required" json:"row"`
+	Column    string `thrift:"3,required" json:"column"`
 	Value     int64  `thrift:"4,required" json:"value"`
 }
 
@@ -644,7 +644,7 @@ type HbaseAtomicIncrementResponse struct {
 }
 
 type HbaseCompactRequest struct {
-	TableNameOrRegionName []byte `thrift:"1,required" json:"tableNameOrRegionName"`
+	TableNameOrRegionName string `thrift:"1,required" json:"tableNameOrRegionName"`
 }
 
 type HbaseCompactResponse struct {
@@ -652,7 +652,7 @@ type HbaseCompactResponse struct {
 }
 
 type HbaseCreateTableRequest struct {
-	TableName      []byte              `thrift:"1,required" json:"tableName"`
+	TableName      string              `thrift:"1,required" json:"tableName"`
 	ColumnFamilies []*ColumnDescriptor `thrift:"2,required" json:"columnFamilies"`
 }
 
@@ -663,10 +663,10 @@ type HbaseCreateTableResponse struct {
 }
 
 type HbaseDeleteAllRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
-	Column     []byte            `thrift:"3,required" json:"column"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
+	Column     string            `thrift:"3,required" json:"column"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseDeleteAllResponse struct {
@@ -674,9 +674,9 @@ type HbaseDeleteAllResponse struct {
 }
 
 type HbaseDeleteAllRowRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
-	Attributes map[string][]byte `thrift:"3,required" json:"attributes"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
+	Attributes map[string]string `thrift:"3,required" json:"attributes"`
 }
 
 type HbaseDeleteAllRowResponse struct {
@@ -684,10 +684,10 @@ type HbaseDeleteAllRowResponse struct {
 }
 
 type HbaseDeleteAllRowTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
 	Timestamp  int64             `thrift:"3,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseDeleteAllRowTsResponse struct {
@@ -695,11 +695,11 @@ type HbaseDeleteAllRowTsResponse struct {
 }
 
 type HbaseDeleteAllTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
-	Column     []byte            `thrift:"3,required" json:"column"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
+	Column     string            `thrift:"3,required" json:"column"`
 	Timestamp  int64             `thrift:"4,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"5,required" json:"attributes"`
+	Attributes map[string]string `thrift:"5,required" json:"attributes"`
 }
 
 type HbaseDeleteAllTsResponse struct {
@@ -707,7 +707,7 @@ type HbaseDeleteAllTsResponse struct {
 }
 
 type HbaseDeleteTableRequest struct {
-	TableName []byte `thrift:"1,required" json:"tableName"`
+	TableName string `thrift:"1,required" json:"tableName"`
 }
 
 type HbaseDeleteTableResponse struct {
@@ -715,7 +715,7 @@ type HbaseDeleteTableResponse struct {
 }
 
 type HbaseDisableTableRequest struct {
-	TableName []byte `thrift:"1,required" json:"tableName"`
+	TableName string `thrift:"1,required" json:"tableName"`
 }
 
 type HbaseDisableTableResponse struct {
@@ -723,7 +723,7 @@ type HbaseDisableTableResponse struct {
 }
 
 type HbaseEnableTableRequest struct {
-	TableName []byte `thrift:"1,required" json:"tableName"`
+	TableName string `thrift:"1,required" json:"tableName"`
 }
 
 type HbaseEnableTableResponse struct {
@@ -731,10 +731,10 @@ type HbaseEnableTableResponse struct {
 }
 
 type HbaseGetRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
-	Column     []byte            `thrift:"3,required" json:"column"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
+	Column     string            `thrift:"3,required" json:"column"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseGetResponse struct {
@@ -743,7 +743,7 @@ type HbaseGetResponse struct {
 }
 
 type HbaseGetColumnDescriptorsRequest struct {
-	TableName []byte `thrift:"1,required" json:"tableName"`
+	TableName string `thrift:"1,required" json:"tableName"`
 }
 
 type HbaseGetColumnDescriptorsResponse struct {
@@ -752,7 +752,7 @@ type HbaseGetColumnDescriptorsResponse struct {
 }
 
 type HbaseGetRegionInfoRequest struct {
-	Row []byte `thrift:"1,required" json:"row"`
+	Row string `thrift:"1,required" json:"row"`
 }
 
 type HbaseGetRegionInfoResponse struct {
@@ -761,9 +761,9 @@ type HbaseGetRegionInfoResponse struct {
 }
 
 type HbaseGetRowRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
-	Attributes map[string][]byte `thrift:"3,required" json:"attributes"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
+	Attributes map[string]string `thrift:"3,required" json:"attributes"`
 }
 
 type HbaseGetRowResponse struct {
@@ -772,9 +772,9 @@ type HbaseGetRowResponse struct {
 }
 
 type HbaseGetRowOrBeforeRequest struct {
-	TableName []byte `thrift:"1,required" json:"tableName"`
-	Row       []byte `thrift:"2,required" json:"row"`
-	Family    []byte `thrift:"3,required" json:"family"`
+	TableName string `thrift:"1,required" json:"tableName"`
+	Row       string `thrift:"2,required" json:"row"`
+	Family    string `thrift:"3,required" json:"family"`
 }
 
 type HbaseGetRowOrBeforeResponse struct {
@@ -783,10 +783,10 @@ type HbaseGetRowOrBeforeResponse struct {
 }
 
 type HbaseGetRowTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
 	Timestamp  int64             `thrift:"3,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseGetRowTsResponse struct {
@@ -795,10 +795,10 @@ type HbaseGetRowTsResponse struct {
 }
 
 type HbaseGetRowWithColumnsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
-	Columns    [][]byte          `thrift:"3,required" json:"columns"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
+	Columns    []string          `thrift:"3,required" json:"columns"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseGetRowWithColumnsResponse struct {
@@ -807,11 +807,11 @@ type HbaseGetRowWithColumnsResponse struct {
 }
 
 type HbaseGetRowWithColumnsTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
-	Columns    [][]byte          `thrift:"3,required" json:"columns"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
+	Columns    []string          `thrift:"3,required" json:"columns"`
 	Timestamp  int64             `thrift:"4,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"5,required" json:"attributes"`
+	Attributes map[string]string `thrift:"5,required" json:"attributes"`
 }
 
 type HbaseGetRowWithColumnsTsResponse struct {
@@ -820,9 +820,9 @@ type HbaseGetRowWithColumnsTsResponse struct {
 }
 
 type HbaseGetRowsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Rows       [][]byte          `thrift:"2,required" json:"rows"`
-	Attributes map[string][]byte `thrift:"3,required" json:"attributes"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Rows       []string          `thrift:"2,required" json:"rows"`
+	Attributes map[string]string `thrift:"3,required" json:"attributes"`
 }
 
 type HbaseGetRowsResponse struct {
@@ -831,10 +831,10 @@ type HbaseGetRowsResponse struct {
 }
 
 type HbaseGetRowsTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Rows       [][]byte          `thrift:"2,required" json:"rows"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Rows       []string          `thrift:"2,required" json:"rows"`
 	Timestamp  int64             `thrift:"3,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseGetRowsTsResponse struct {
@@ -843,10 +843,10 @@ type HbaseGetRowsTsResponse struct {
 }
 
 type HbaseGetRowsWithColumnsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Rows       [][]byte          `thrift:"2,required" json:"rows"`
-	Columns    [][]byte          `thrift:"3,required" json:"columns"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Rows       []string          `thrift:"2,required" json:"rows"`
+	Columns    []string          `thrift:"3,required" json:"columns"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseGetRowsWithColumnsResponse struct {
@@ -855,11 +855,11 @@ type HbaseGetRowsWithColumnsResponse struct {
 }
 
 type HbaseGetRowsWithColumnsTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Rows       [][]byte          `thrift:"2,required" json:"rows"`
-	Columns    [][]byte          `thrift:"3,required" json:"columns"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Rows       []string          `thrift:"2,required" json:"rows"`
+	Columns    []string          `thrift:"3,required" json:"columns"`
 	Timestamp  int64             `thrift:"4,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"5,required" json:"attributes"`
+	Attributes map[string]string `thrift:"5,required" json:"attributes"`
 }
 
 type HbaseGetRowsWithColumnsTsResponse struct {
@@ -871,12 +871,12 @@ type HbaseGetTableNamesRequest struct {
 }
 
 type HbaseGetTableNamesResponse struct {
-	Value [][]byte `thrift:"0" json:"value"`
+	Value []string `thrift:"0" json:"value"`
 	Io    *IOError `thrift:"1" json:"io"`
 }
 
 type HbaseGetTableRegionsRequest struct {
-	TableName []byte `thrift:"1,required" json:"tableName"`
+	TableName string `thrift:"1,required" json:"tableName"`
 }
 
 type HbaseGetTableRegionsResponse struct {
@@ -885,11 +885,11 @@ type HbaseGetTableRegionsResponse struct {
 }
 
 type HbaseGetVerRequest struct {
-	TableName   []byte            `thrift:"1,required" json:"tableName"`
-	Row         []byte            `thrift:"2,required" json:"row"`
-	Column      []byte            `thrift:"3,required" json:"column"`
+	TableName   string            `thrift:"1,required" json:"tableName"`
+	Row         string            `thrift:"2,required" json:"row"`
+	Column      string            `thrift:"3,required" json:"column"`
 	NumVersions int32             `thrift:"4,required" json:"numVersions"`
-	Attributes  map[string][]byte `thrift:"5,required" json:"attributes"`
+	Attributes  map[string]string `thrift:"5,required" json:"attributes"`
 }
 
 type HbaseGetVerResponse struct {
@@ -898,12 +898,12 @@ type HbaseGetVerResponse struct {
 }
 
 type HbaseGetVerTsRequest struct {
-	TableName   []byte            `thrift:"1,required" json:"tableName"`
-	Row         []byte            `thrift:"2,required" json:"row"`
-	Column      []byte            `thrift:"3,required" json:"column"`
+	TableName   string            `thrift:"1,required" json:"tableName"`
+	Row         string            `thrift:"2,required" json:"row"`
+	Column      string            `thrift:"3,required" json:"column"`
 	Timestamp   int64             `thrift:"4,required" json:"timestamp"`
 	NumVersions int32             `thrift:"5,required" json:"numVersions"`
-	Attributes  map[string][]byte `thrift:"6,required" json:"attributes"`
+	Attributes  map[string]string `thrift:"6,required" json:"attributes"`
 }
 
 type HbaseGetVerTsResponse struct {
@@ -928,7 +928,7 @@ type HbaseIncrementRowsResponse struct {
 }
 
 type HbaseIsTableEnabledRequest struct {
-	TableName []byte `thrift:"1,required" json:"tableName"`
+	TableName string `thrift:"1,required" json:"tableName"`
 }
 
 type HbaseIsTableEnabledResponse struct {
@@ -937,7 +937,7 @@ type HbaseIsTableEnabledResponse struct {
 }
 
 type HbaseMajorCompactRequest struct {
-	TableNameOrRegionName []byte `thrift:"1,required" json:"tableNameOrRegionName"`
+	TableNameOrRegionName string `thrift:"1,required" json:"tableNameOrRegionName"`
 }
 
 type HbaseMajorCompactResponse struct {
@@ -945,10 +945,10 @@ type HbaseMajorCompactResponse struct {
 }
 
 type HbaseMutateRowRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
 	Mutations  []*Mutation       `thrift:"3,required" json:"mutations"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseMutateRowResponse struct {
@@ -957,11 +957,11 @@ type HbaseMutateRowResponse struct {
 }
 
 type HbaseMutateRowTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	Row        []byte            `thrift:"2,required" json:"row"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	Row        string            `thrift:"2,required" json:"row"`
 	Mutations  []*Mutation       `thrift:"3,required" json:"mutations"`
 	Timestamp  int64             `thrift:"4,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"5,required" json:"attributes"`
+	Attributes map[string]string `thrift:"5,required" json:"attributes"`
 }
 
 type HbaseMutateRowTsResponse struct {
@@ -970,9 +970,9 @@ type HbaseMutateRowTsResponse struct {
 }
 
 type HbaseMutateRowsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
 	RowBatches []*BatchMutation  `thrift:"2,required" json:"rowBatches"`
-	Attributes map[string][]byte `thrift:"3,required" json:"attributes"`
+	Attributes map[string]string `thrift:"3,required" json:"attributes"`
 }
 
 type HbaseMutateRowsResponse struct {
@@ -981,10 +981,10 @@ type HbaseMutateRowsResponse struct {
 }
 
 type HbaseMutateRowsTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
 	RowBatches []*BatchMutation  `thrift:"2,required" json:"rowBatches"`
 	Timestamp  int64             `thrift:"3,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseMutateRowsTsResponse struct {
@@ -1023,10 +1023,10 @@ type HbaseScannerGetListResponse struct {
 }
 
 type HbaseScannerOpenRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	StartRow   []byte            `thrift:"2,required" json:"startRow"`
-	Columns    [][]byte          `thrift:"3,required" json:"columns"`
-	Attributes map[string][]byte `thrift:"4,required" json:"attributes"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	StartRow   string            `thrift:"2,required" json:"startRow"`
+	Columns    []string          `thrift:"3,required" json:"columns"`
+	Attributes map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseScannerOpenResponse struct {
@@ -1035,11 +1035,11 @@ type HbaseScannerOpenResponse struct {
 }
 
 type HbaseScannerOpenTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	StartRow   []byte            `thrift:"2,required" json:"startRow"`
-	Columns    [][]byte          `thrift:"3,required" json:"columns"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	StartRow   string            `thrift:"2,required" json:"startRow"`
+	Columns    []string          `thrift:"3,required" json:"columns"`
 	Timestamp  int64             `thrift:"4,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"5,required" json:"attributes"`
+	Attributes map[string]string `thrift:"5,required" json:"attributes"`
 }
 
 type HbaseScannerOpenTsResponse struct {
@@ -1048,10 +1048,10 @@ type HbaseScannerOpenTsResponse struct {
 }
 
 type HbaseScannerOpenWithPrefixRequest struct {
-	TableName      []byte            `thrift:"1,required" json:"tableName"`
-	StartAndPrefix []byte            `thrift:"2,required" json:"startAndPrefix"`
-	Columns        [][]byte          `thrift:"3,required" json:"columns"`
-	Attributes     map[string][]byte `thrift:"4,required" json:"attributes"`
+	TableName      string            `thrift:"1,required" json:"tableName"`
+	StartAndPrefix string            `thrift:"2,required" json:"startAndPrefix"`
+	Columns        []string          `thrift:"3,required" json:"columns"`
+	Attributes     map[string]string `thrift:"4,required" json:"attributes"`
 }
 
 type HbaseScannerOpenWithPrefixResponse struct {
@@ -1060,9 +1060,9 @@ type HbaseScannerOpenWithPrefixResponse struct {
 }
 
 type HbaseScannerOpenWithScanRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
 	Scan       *TScan            `thrift:"2,required" json:"scan"`
-	Attributes map[string][]byte `thrift:"3,required" json:"attributes"`
+	Attributes map[string]string `thrift:"3,required" json:"attributes"`
 }
 
 type HbaseScannerOpenWithScanResponse struct {
@@ -1071,11 +1071,11 @@ type HbaseScannerOpenWithScanResponse struct {
 }
 
 type HbaseScannerOpenWithStopRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	StartRow   []byte            `thrift:"2,required" json:"startRow"`
-	StopRow    []byte            `thrift:"3,required" json:"stopRow"`
-	Columns    [][]byte          `thrift:"4,required" json:"columns"`
-	Attributes map[string][]byte `thrift:"5,required" json:"attributes"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	StartRow   string            `thrift:"2,required" json:"startRow"`
+	StopRow    string            `thrift:"3,required" json:"stopRow"`
+	Columns    []string          `thrift:"4,required" json:"columns"`
+	Attributes map[string]string `thrift:"5,required" json:"attributes"`
 }
 
 type HbaseScannerOpenWithStopResponse struct {
@@ -1084,12 +1084,12 @@ type HbaseScannerOpenWithStopResponse struct {
 }
 
 type HbaseScannerOpenWithStopTsRequest struct {
-	TableName  []byte            `thrift:"1,required" json:"tableName"`
-	StartRow   []byte            `thrift:"2,required" json:"startRow"`
-	StopRow    []byte            `thrift:"3,required" json:"stopRow"`
-	Columns    [][]byte          `thrift:"4,required" json:"columns"`
+	TableName  string            `thrift:"1,required" json:"tableName"`
+	StartRow   string            `thrift:"2,required" json:"startRow"`
+	StopRow    string            `thrift:"3,required" json:"stopRow"`
+	Columns    []string          `thrift:"4,required" json:"columns"`
 	Timestamp  int64             `thrift:"5,required" json:"timestamp"`
-	Attributes map[string][]byte `thrift:"6,required" json:"attributes"`
+	Attributes map[string]string `thrift:"6,required" json:"attributes"`
 }
 
 type HbaseScannerOpenWithStopTsResponse struct {
@@ -1101,7 +1101,7 @@ type HbaseClient struct {
 	Client RPCClient
 }
 
-func (s *HbaseClient) AtomicIncrement(TableName []byte, Row []byte, Column []byte, Value int64) (int64, error) {
+func (s *HbaseClient) AtomicIncrement(TableName string, Row string, Column string, Value int64) (int64, error) {
 	req := &HbaseAtomicIncrementRequest{
 		TableName: TableName,
 		Row:       Row,
@@ -1121,7 +1121,7 @@ func (s *HbaseClient) AtomicIncrement(TableName []byte, Row []byte, Column []byt
 	return res.Value, err
 }
 
-func (s *HbaseClient) Compact(TableNameOrRegionName []byte) error {
+func (s *HbaseClient) Compact(TableNameOrRegionName string) error {
 	req := &HbaseCompactRequest{
 		TableNameOrRegionName: TableNameOrRegionName,
 	}
@@ -1136,7 +1136,7 @@ func (s *HbaseClient) Compact(TableNameOrRegionName []byte) error {
 	return err
 }
 
-func (s *HbaseClient) CreateTable(TableName []byte, ColumnFamilies []*ColumnDescriptor) error {
+func (s *HbaseClient) CreateTable(TableName string, ColumnFamilies []*ColumnDescriptor) error {
 	req := &HbaseCreateTableRequest{
 		TableName:      TableName,
 		ColumnFamilies: ColumnFamilies,
@@ -1156,7 +1156,7 @@ func (s *HbaseClient) CreateTable(TableName []byte, ColumnFamilies []*ColumnDesc
 	return err
 }
 
-func (s *HbaseClient) DeleteAll(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) error {
+func (s *HbaseClient) DeleteAll(TableName string, Row string, Column string, Attributes map[string]string) error {
 	req := &HbaseDeleteAllRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1174,7 +1174,7 @@ func (s *HbaseClient) DeleteAll(TableName []byte, Row []byte, Column []byte, Att
 	return err
 }
 
-func (s *HbaseClient) DeleteAllRow(TableName []byte, Row []byte, Attributes map[string][]byte) error {
+func (s *HbaseClient) DeleteAllRow(TableName string, Row string, Attributes map[string]string) error {
 	req := &HbaseDeleteAllRowRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1191,7 +1191,7 @@ func (s *HbaseClient) DeleteAllRow(TableName []byte, Row []byte, Attributes map[
 	return err
 }
 
-func (s *HbaseClient) DeleteAllRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) error {
+func (s *HbaseClient) DeleteAllRowTs(TableName string, Row string, Timestamp int64, Attributes map[string]string) error {
 	req := &HbaseDeleteAllRowTsRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1209,7 +1209,7 @@ func (s *HbaseClient) DeleteAllRowTs(TableName []byte, Row []byte, Timestamp int
 	return err
 }
 
-func (s *HbaseClient) DeleteAllTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, Attributes map[string][]byte) error {
+func (s *HbaseClient) DeleteAllTs(TableName string, Row string, Column string, Timestamp int64, Attributes map[string]string) error {
 	req := &HbaseDeleteAllTsRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1228,7 +1228,7 @@ func (s *HbaseClient) DeleteAllTs(TableName []byte, Row []byte, Column []byte, T
 	return err
 }
 
-func (s *HbaseClient) DeleteTable(TableName []byte) error {
+func (s *HbaseClient) DeleteTable(TableName string) error {
 	req := &HbaseDeleteTableRequest{
 		TableName: TableName,
 	}
@@ -1243,7 +1243,7 @@ func (s *HbaseClient) DeleteTable(TableName []byte) error {
 	return err
 }
 
-func (s *HbaseClient) DisableTable(TableName []byte) error {
+func (s *HbaseClient) DisableTable(TableName string) error {
 	req := &HbaseDisableTableRequest{
 		TableName: TableName,
 	}
@@ -1258,7 +1258,7 @@ func (s *HbaseClient) DisableTable(TableName []byte) error {
 	return err
 }
 
-func (s *HbaseClient) EnableTable(TableName []byte) error {
+func (s *HbaseClient) EnableTable(TableName string) error {
 	req := &HbaseEnableTableRequest{
 		TableName: TableName,
 	}
@@ -1273,7 +1273,7 @@ func (s *HbaseClient) EnableTable(TableName []byte) error {
 	return err
 }
 
-func (s *HbaseClient) Get(TableName []byte, Row []byte, Column []byte, Attributes map[string][]byte) ([]*TCell, error) {
+func (s *HbaseClient) Get(TableName string, Row string, Column string, Attributes map[string]string) ([]*TCell, error) {
 	req := &HbaseGetRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1291,7 +1291,7 @@ func (s *HbaseClient) Get(TableName []byte, Row []byte, Column []byte, Attribute
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetColumnDescriptors(TableName []byte) (map[string]*ColumnDescriptor, error) {
+func (s *HbaseClient) GetColumnDescriptors(TableName string) (map[string]*ColumnDescriptor, error) {
 	req := &HbaseGetColumnDescriptorsRequest{
 		TableName: TableName,
 	}
@@ -1306,7 +1306,7 @@ func (s *HbaseClient) GetColumnDescriptors(TableName []byte) (map[string]*Column
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRegionInfo(Row []byte) (*TRegionInfo, error) {
+func (s *HbaseClient) GetRegionInfo(Row string) (*TRegionInfo, error) {
 	req := &HbaseGetRegionInfoRequest{
 		Row: Row,
 	}
@@ -1321,7 +1321,7 @@ func (s *HbaseClient) GetRegionInfo(Row []byte) (*TRegionInfo, error) {
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRow(TableName []byte, Row []byte, Attributes map[string][]byte) ([]*TRowResult, error) {
+func (s *HbaseClient) GetRow(TableName string, Row string, Attributes map[string]string) ([]*TRowResult, error) {
 	req := &HbaseGetRowRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1338,7 +1338,7 @@ func (s *HbaseClient) GetRow(TableName []byte, Row []byte, Attributes map[string
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRowOrBefore(TableName []byte, Row []byte, Family []byte) ([]*TCell, error) {
+func (s *HbaseClient) GetRowOrBefore(TableName string, Row string, Family string) ([]*TCell, error) {
 	req := &HbaseGetRowOrBeforeRequest{
 		TableName: TableName,
 		Row:       Row,
@@ -1355,7 +1355,7 @@ func (s *HbaseClient) GetRowOrBefore(TableName []byte, Row []byte, Family []byte
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRowTs(TableName []byte, Row []byte, Timestamp int64, Attributes map[string][]byte) ([]*TRowResult, error) {
+func (s *HbaseClient) GetRowTs(TableName string, Row string, Timestamp int64, Attributes map[string]string) ([]*TRowResult, error) {
 	req := &HbaseGetRowTsRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1373,7 +1373,7 @@ func (s *HbaseClient) GetRowTs(TableName []byte, Row []byte, Timestamp int64, At
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRowWithColumns(TableName []byte, Row []byte, Columns [][]byte, Attributes map[string][]byte) ([]*TRowResult, error) {
+func (s *HbaseClient) GetRowWithColumns(TableName string, Row string, Columns []string, Attributes map[string]string) ([]*TRowResult, error) {
 	req := &HbaseGetRowWithColumnsRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1391,7 +1391,7 @@ func (s *HbaseClient) GetRowWithColumns(TableName []byte, Row []byte, Columns []
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRowWithColumnsTs(TableName []byte, Row []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*TRowResult, error) {
+func (s *HbaseClient) GetRowWithColumnsTs(TableName string, Row string, Columns []string, Timestamp int64, Attributes map[string]string) ([]*TRowResult, error) {
 	req := &HbaseGetRowWithColumnsTsRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1410,7 +1410,7 @@ func (s *HbaseClient) GetRowWithColumnsTs(TableName []byte, Row []byte, Columns 
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRows(TableName []byte, Rows [][]byte, Attributes map[string][]byte) ([]*TRowResult, error) {
+func (s *HbaseClient) GetRows(TableName string, Rows []string, Attributes map[string]string) ([]*TRowResult, error) {
 	req := &HbaseGetRowsRequest{
 		TableName:  TableName,
 		Rows:       Rows,
@@ -1427,7 +1427,7 @@ func (s *HbaseClient) GetRows(TableName []byte, Rows [][]byte, Attributes map[st
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRowsTs(TableName []byte, Rows [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*TRowResult, error) {
+func (s *HbaseClient) GetRowsTs(TableName string, Rows []string, Timestamp int64, Attributes map[string]string) ([]*TRowResult, error) {
 	req := &HbaseGetRowsTsRequest{
 		TableName:  TableName,
 		Rows:       Rows,
@@ -1445,7 +1445,7 @@ func (s *HbaseClient) GetRowsTs(TableName []byte, Rows [][]byte, Timestamp int64
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRowsWithColumns(TableName []byte, Rows [][]byte, Columns [][]byte, Attributes map[string][]byte) ([]*TRowResult, error) {
+func (s *HbaseClient) GetRowsWithColumns(TableName string, Rows []string, Columns []string, Attributes map[string]string) ([]*TRowResult, error) {
 	req := &HbaseGetRowsWithColumnsRequest{
 		TableName:  TableName,
 		Rows:       Rows,
@@ -1463,7 +1463,7 @@ func (s *HbaseClient) GetRowsWithColumns(TableName []byte, Rows [][]byte, Column
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetRowsWithColumnsTs(TableName []byte, Rows [][]byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) ([]*TRowResult, error) {
+func (s *HbaseClient) GetRowsWithColumnsTs(TableName string, Rows []string, Columns []string, Timestamp int64, Attributes map[string]string) ([]*TRowResult, error) {
 	req := &HbaseGetRowsWithColumnsTsRequest{
 		TableName:  TableName,
 		Rows:       Rows,
@@ -1482,7 +1482,7 @@ func (s *HbaseClient) GetRowsWithColumnsTs(TableName []byte, Rows [][]byte, Colu
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetTableNames() ([][]byte, error) {
+func (s *HbaseClient) GetTableNames() ([]string, error) {
 	req := &HbaseGetTableNamesRequest{}
 	res := &HbaseGetTableNamesResponse{}
 	err := s.Client.Call("getTableNames", req, res)
@@ -1495,7 +1495,7 @@ func (s *HbaseClient) GetTableNames() ([][]byte, error) {
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetTableRegions(TableName []byte) ([]*TRegionInfo, error) {
+func (s *HbaseClient) GetTableRegions(TableName string) ([]*TRegionInfo, error) {
 	req := &HbaseGetTableRegionsRequest{
 		TableName: TableName,
 	}
@@ -1510,7 +1510,7 @@ func (s *HbaseClient) GetTableRegions(TableName []byte) ([]*TRegionInfo, error) 
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetVer(TableName []byte, Row []byte, Column []byte, NumVersions int32, Attributes map[string][]byte) ([]*TCell, error) {
+func (s *HbaseClient) GetVer(TableName string, Row string, Column string, NumVersions int32, Attributes map[string]string) ([]*TCell, error) {
 	req := &HbaseGetVerRequest{
 		TableName:   TableName,
 		Row:         Row,
@@ -1529,7 +1529,7 @@ func (s *HbaseClient) GetVer(TableName []byte, Row []byte, Column []byte, NumVer
 	return res.Value, err
 }
 
-func (s *HbaseClient) GetVerTs(TableName []byte, Row []byte, Column []byte, Timestamp int64, NumVersions int32, Attributes map[string][]byte) ([]*TCell, error) {
+func (s *HbaseClient) GetVerTs(TableName string, Row string, Column string, Timestamp int64, NumVersions int32, Attributes map[string]string) ([]*TCell, error) {
 	req := &HbaseGetVerTsRequest{
 		TableName:   TableName,
 		Row:         Row,
@@ -1579,7 +1579,7 @@ func (s *HbaseClient) IncrementRows(Increments []*TIncrement) error {
 	return err
 }
 
-func (s *HbaseClient) IsTableEnabled(TableName []byte) (bool, error) {
+func (s *HbaseClient) IsTableEnabled(TableName string) (bool, error) {
 	req := &HbaseIsTableEnabledRequest{
 		TableName: TableName,
 	}
@@ -1594,7 +1594,7 @@ func (s *HbaseClient) IsTableEnabled(TableName []byte) (bool, error) {
 	return res.Value, err
 }
 
-func (s *HbaseClient) MajorCompact(TableNameOrRegionName []byte) error {
+func (s *HbaseClient) MajorCompact(TableNameOrRegionName string) error {
 	req := &HbaseMajorCompactRequest{
 		TableNameOrRegionName: TableNameOrRegionName,
 	}
@@ -1609,7 +1609,7 @@ func (s *HbaseClient) MajorCompact(TableNameOrRegionName []byte) error {
 	return err
 }
 
-func (s *HbaseClient) MutateRow(TableName []byte, Row []byte, Mutations []*Mutation, Attributes map[string][]byte) error {
+func (s *HbaseClient) MutateRow(TableName string, Row string, Mutations []*Mutation, Attributes map[string]string) error {
 	req := &HbaseMutateRowRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1629,7 +1629,7 @@ func (s *HbaseClient) MutateRow(TableName []byte, Row []byte, Mutations []*Mutat
 	return err
 }
 
-func (s *HbaseClient) MutateRowTs(TableName []byte, Row []byte, Mutations []*Mutation, Timestamp int64, Attributes map[string][]byte) error {
+func (s *HbaseClient) MutateRowTs(TableName string, Row string, Mutations []*Mutation, Timestamp int64, Attributes map[string]string) error {
 	req := &HbaseMutateRowTsRequest{
 		TableName:  TableName,
 		Row:        Row,
@@ -1650,7 +1650,7 @@ func (s *HbaseClient) MutateRowTs(TableName []byte, Row []byte, Mutations []*Mut
 	return err
 }
 
-func (s *HbaseClient) MutateRows(TableName []byte, RowBatches []*BatchMutation, Attributes map[string][]byte) error {
+func (s *HbaseClient) MutateRows(TableName string, RowBatches []*BatchMutation, Attributes map[string]string) error {
 	req := &HbaseMutateRowsRequest{
 		TableName:  TableName,
 		RowBatches: RowBatches,
@@ -1669,7 +1669,7 @@ func (s *HbaseClient) MutateRows(TableName []byte, RowBatches []*BatchMutation, 
 	return err
 }
 
-func (s *HbaseClient) MutateRowsTs(TableName []byte, RowBatches []*BatchMutation, Timestamp int64, Attributes map[string][]byte) error {
+func (s *HbaseClient) MutateRowsTs(TableName string, RowBatches []*BatchMutation, Timestamp int64, Attributes map[string]string) error {
 	req := &HbaseMutateRowsTsRequest{
 		TableName:  TableName,
 		RowBatches: RowBatches,
@@ -1741,7 +1741,7 @@ func (s *HbaseClient) ScannerGetList(Id int32, NbRows int32) ([]*TRowResult, err
 	return res.Value, err
 }
 
-func (s *HbaseClient) ScannerOpen(TableName []byte, StartRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+func (s *HbaseClient) ScannerOpen(TableName string, StartRow string, Columns []string, Attributes map[string]string) (int32, error) {
 	req := &HbaseScannerOpenRequest{
 		TableName:  TableName,
 		StartRow:   StartRow,
@@ -1759,7 +1759,7 @@ func (s *HbaseClient) ScannerOpen(TableName []byte, StartRow []byte, Columns [][
 	return res.Value, err
 }
 
-func (s *HbaseClient) ScannerOpenTs(TableName []byte, StartRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error) {
+func (s *HbaseClient) ScannerOpenTs(TableName string, StartRow string, Columns []string, Timestamp int64, Attributes map[string]string) (int32, error) {
 	req := &HbaseScannerOpenTsRequest{
 		TableName:  TableName,
 		StartRow:   StartRow,
@@ -1778,7 +1778,7 @@ func (s *HbaseClient) ScannerOpenTs(TableName []byte, StartRow []byte, Columns [
 	return res.Value, err
 }
 
-func (s *HbaseClient) ScannerOpenWithPrefix(TableName []byte, StartAndPrefix []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+func (s *HbaseClient) ScannerOpenWithPrefix(TableName string, StartAndPrefix string, Columns []string, Attributes map[string]string) (int32, error) {
 	req := &HbaseScannerOpenWithPrefixRequest{
 		TableName:      TableName,
 		StartAndPrefix: StartAndPrefix,
@@ -1796,7 +1796,7 @@ func (s *HbaseClient) ScannerOpenWithPrefix(TableName []byte, StartAndPrefix []b
 	return res.Value, err
 }
 
-func (s *HbaseClient) ScannerOpenWithScan(TableName []byte, Scan *TScan, Attributes map[string][]byte) (int32, error) {
+func (s *HbaseClient) ScannerOpenWithScan(TableName string, Scan *TScan, Attributes map[string]string) (int32, error) {
 	req := &HbaseScannerOpenWithScanRequest{
 		TableName:  TableName,
 		Scan:       Scan,
@@ -1813,7 +1813,7 @@ func (s *HbaseClient) ScannerOpenWithScan(TableName []byte, Scan *TScan, Attribu
 	return res.Value, err
 }
 
-func (s *HbaseClient) ScannerOpenWithStop(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Attributes map[string][]byte) (int32, error) {
+func (s *HbaseClient) ScannerOpenWithStop(TableName string, StartRow string, StopRow string, Columns []string, Attributes map[string]string) (int32, error) {
 	req := &HbaseScannerOpenWithStopRequest{
 		TableName:  TableName,
 		StartRow:   StartRow,
@@ -1832,7 +1832,7 @@ func (s *HbaseClient) ScannerOpenWithStop(TableName []byte, StartRow []byte, Sto
 	return res.Value, err
 }
 
-func (s *HbaseClient) ScannerOpenWithStopTs(TableName []byte, StartRow []byte, StopRow []byte, Columns [][]byte, Timestamp int64, Attributes map[string][]byte) (int32, error) {
+func (s *HbaseClient) ScannerOpenWithStopTs(TableName string, StartRow string, StopRow string, Columns []string, Timestamp int64, Attributes map[string]string) (int32, error) {
 	req := &HbaseScannerOpenWithStopTsRequest{
 		TableName:  TableName,
 		StartRow:   StartRow,
