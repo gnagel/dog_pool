@@ -60,16 +60,16 @@ func HbaseClientSpecs(c gospec.Context) {
 		c.Expect(closed, gospec.Satisfies, open != closed)
 	})
 
-	// c.Specify("[HbaseClient] GetTableNames has no errors", func() {
-	// 	connection := &HbaseClient{}
-	// 	defer connection.Close()
-	//
-	// 	err := connection.Open("127.0.0.1:9090", time.Duration(1)*time.Second)
-	// 	c.Expect(err, gospec.Equals, nil)
-	//
-	// 	var tables []string
-	// 	tables, err = connection.GetTableNames()
-	// 	c.Expect(err, gospec.Equals, nil)
-	// 	c.Expect(tables, gospec.Satisfies, tables != nil)
-	// })
+	c.Specify("[HbaseClient] GetTableNames has no errors", func() {
+		connection := &HbaseClient{}
+		defer connection.Close()
+
+		err := connection.Open("127.0.0.1:9090", time.Duration(1)*time.Second)
+		c.Expect(err, gospec.Equals, nil)
+
+		var tables []string
+		tables, err = connection.GetTableNames()
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(tables, gospec.Satisfies, tables != nil)
+	})
 }

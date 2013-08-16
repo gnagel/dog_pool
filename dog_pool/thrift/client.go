@@ -51,8 +51,9 @@ func (s *HbaseClient) Open(url string, timeout time.Duration) error {
 
 	// Strict Write = true
 	// Strict Read = false
-	protocol := thrift.NewBinaryProtocol(true, false)
-	s.Client = thrift.NewClient(readwrite, protocol, true)
+	// protocol := thrift.NewBinaryProtocol(true, false)
+	protocol := thrift.NewCompactProtocol()
+	s.Client = thrift.NewClient(readwrite, protocol, false)
 
 	return nil
 }
