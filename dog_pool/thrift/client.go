@@ -47,7 +47,9 @@ func (s *HbaseClient) Open(url string, timeout time.Duration) error {
 		return err
 	}
 
-	readwrite := thrift.NewFramedReadWriteCloser(conn, 0)
+	conn.SetDeadline(time.Now().Add(time.Duration(100) * time.Millisecond))
+
+	readwrite := thrift.NewFramedReadWriteCloser(conn, 1024)
 
 	// Strict Write = true
 	// Strict Read = false

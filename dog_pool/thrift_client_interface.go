@@ -7,17 +7,17 @@
 package dog_pool
 
 import "./thrift"
+import goh_hbase "github.com/sdming/goh/Hbase"
 
 type ThriftClientInterface interface {
 	// Implemenent all of the client methods
-	thrift.Hbase
+	go_hase.IHbase
 
 	// Plus these methods too ...
 
-	// Is the connection open?
-	IsOpen() bool
-	// Is the connection closed?
-	IsClosed() bool
+
+	// Open the connection
+	Open() error
 
 	// Close the connection
 	Close() error

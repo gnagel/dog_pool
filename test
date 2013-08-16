@@ -23,6 +23,7 @@ go get "github.com/orfjackal/gospec/src/gospec"
 go get "github.com/samuel/go-thrift/thrift"
 go get "github.com/samuel/go-thrift/generator"
 go get "github.com/samuel/go-thrift/parser"
+go get "github.com/sdming/goh"
 
 
 echo ""

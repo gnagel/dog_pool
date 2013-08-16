@@ -67,9 +67,14 @@ func HbaseClientSpecs(c gospec.Context) {
 		err := connection.Open("127.0.0.1:9090", time.Duration(1)*time.Second)
 		c.Expect(err, gospec.Equals, nil)
 
-		var tables []string
-		tables, err = connection.GetTableNames()
-		c.Expect(err, gospec.Equals, nil)
-		c.Expect(tables, gospec.Satisfies, tables != nil)
+		var ok bool
+		ok, err = connection.IsTableEnabled("bob")
+		c.Expect(ok, gospec.Equals, false)
+		c.Expect(err, gospec.Satisfies, nil != err)
+
+		// var tables []string
+		// tables, err = connection.GetTableNames()
+		// c.Expect(err, gospec.Equals, nil)
+		// c.Expect(tables, gospec.Satisfies, tables != nil)
 	})
 }
