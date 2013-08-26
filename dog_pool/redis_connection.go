@@ -4,6 +4,7 @@
 
 package dog_pool
 
+import "errors"
 import "fmt"
 import "strings"
 import "time"
@@ -165,6 +166,36 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 
 	// Return the reply from redis to the caller
 	return reply
+}
+
+type RedisBatchCommand struct {
+	Cmd   string
+	Args  []string
+	Reply *redis.Reply
+}
+
+func (p *RedisConnection) BatchCommands(commands []*RedisBatchCommand) error {
+	for _, command := range commands {
+		if nil == command.Args {
+			p.Append(command.Cmd)
+		} else {
+			args := make([]interface{}, len(command.Args))
+			for i, arg := range command.Args {
+				args[i] = arg
+			}
+			p.Append(command.Cmd, args...)
+		}
+	}
+
+	for index := range commands {
+		commands[index].Reply = p.GetReply()
+
+		if p.IsClosed() {
+			return errors.New("[BatchCommands] Connection closed while getting replys")
+		}
+	}
+
+	return nil
 }
 
 //
