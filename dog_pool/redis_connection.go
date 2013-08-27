@@ -168,16 +168,6 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 	return reply
 }
 
-type RedisBatchCommand struct {
-	Cmd   string
-	Args  []string
-	Reply *redis.Reply
-}
-
-func (p *RedisBatchCommand) String() string {
-	return fmt.Sprintf("%s %s --> %#v", p.Cmd, strings.Join(p.Args, " "), p.Reply)
-}
-
 func (p *RedisConnection) BatchCommands(commands []*RedisBatchCommand) error {
 	for _, command := range commands {
 		if nil == command.Args {
