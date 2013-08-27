@@ -20,7 +20,7 @@ func MemcachedServerProcessSpecs(c gospec.Context) {
 	c.Specify("[MemcachedServerProcess] Starts a new Memcached-Server", func() {
 		server, err := StartMemcachedServer(&logger)
 		defer server.Close()
-		
+
 		c.Expect(err, gospec.Equals, nil)
 		c.Expect(server, gospec.Satisfies, server != nil)
 		c.Expect(server.logger, gospec.Equals, &logger)
@@ -32,7 +32,7 @@ func MemcachedServerProcessSpecs(c gospec.Context) {
 	c.Specify("[MemcachedServerProcess] Creates a connection to a Memcached-Server", func() {
 		server, err := StartMemcachedServer(&logger)
 		defer server.Close()
-		
+
 		c.Expect(err, gospec.Equals, nil)
 		c.Expect(server, gospec.Satisfies, server != nil)
 

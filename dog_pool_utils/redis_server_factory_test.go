@@ -20,7 +20,7 @@ func RedisServerProcessSpecs(c gospec.Context) {
 	c.Specify("[RedisServerProcess] Starts a new Redis-Server", func() {
 		server, err := StartRedisServer(&logger)
 		defer server.Close()
-		
+
 		c.Expect(err, gospec.Equals, nil)
 		c.Expect(server, gospec.Satisfies, server != nil)
 		c.Expect(server.logger, gospec.Equals, &logger)
@@ -32,7 +32,7 @@ func RedisServerProcessSpecs(c gospec.Context) {
 	c.Specify("[RedisServerProcess] Creates a connection to a Redis-Server", func() {
 		server, err := StartRedisServer(&logger)
 		defer server.Close()
-		
+
 		c.Expect(err, gospec.Equals, nil)
 		c.Expect(server, gospec.Satisfies, server != nil)
 
