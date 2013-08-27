@@ -5,8 +5,7 @@ import "os/exec"
 import "errors"
 import "time"
 import "github.com/alecthomas/log4go"
-
-import dog_pool "../"
+import "github.com/gnagel/dog_pool/dog_pool"
 
 type MemcachedServerProcess struct {
 	port       int
