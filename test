@@ -31,6 +31,7 @@ echo ".................................................................."
 echo "Formatting the code .............................................."
 echo ".................................................................."
 gofmt -s -w $GOPATH/dog_pool
+gofmt -s -w $GOPATH/dog_pool_utils
 echo ""
 
 
@@ -45,7 +46,8 @@ echo ""
 # 
 # Run the tests
 # 
-go test -v ./dog_pool/...
+go test -v ./dog_pool/... || exit $?
+go test -v ./dog_pool_utils/... || exit $?
 
 echo ""
 echo ".................................................................."

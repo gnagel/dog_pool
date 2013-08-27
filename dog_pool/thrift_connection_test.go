@@ -12,7 +12,7 @@ import "github.com/alecthomas/log4go"
 //
 func TestThriftConnectionSpecs(t *testing.T) {
 	r := gospec.NewRunner()
-	r.AddSpec(ThriftConnectionSpecs)
+	// r.AddSpec(ThriftConnectionSpecs)
 	gospec.MainGoTest(r, t)
 }
 
