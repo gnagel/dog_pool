@@ -128,7 +128,9 @@ func (p *MemcachedConnection) GetMulti(keys []string) (output map[string]*memcac
 	}
 
 	// Perform the memcached request
+	stop_watch := MakeStopWatch(p, p.Logger, "GetMulti").Start()
 	output, err = p.client.GetMulti(keys)
+	stop_watch.Stop().LogDuration()
 
 	switch err {
 	case nil:
@@ -167,7 +169,9 @@ func (p *MemcachedConnection) Get(key string) (item *memcached.Item, err error) 
 	}
 
 	// Perform the memcached request
+	stop_watch := MakeStopWatch(p, p.Logger, "Get").Start()
 	item, err = p.client.Get(key)
+	stop_watch.Stop().LogDuration()
 
 	switch err {
 	case nil:
@@ -200,7 +204,9 @@ func (p *MemcachedConnection) Set(item *memcached.Item) (err error) {
 	}
 
 	// Perform the memcached request
+	stop_watch := MakeStopWatch(p, p.Logger, "Set").Start()
 	err = p.client.Set(item)
+	stop_watch.Stop().LogDuration()
 
 	key := item.Key
 	delta := bytes.NewBuffer(item.Value).String()
@@ -232,7 +238,9 @@ func (p *MemcachedConnection) Delete(key string) (err error) {
 	}
 
 	// Perform the memcached request
+	stop_watch := MakeStopWatch(p, p.Logger, "Delete").Start()
 	err = p.client.Delete(key)
+	stop_watch.Stop().LogDuration()
 
 	switch err {
 	case nil:
@@ -266,7 +274,9 @@ func (p *MemcachedConnection) Add(item *memcached.Item) (err error) {
 	}
 
 	// Perform the memcached request
+	stop_watch := MakeStopWatch(p, p.Logger, "Add").Start()
 	err = p.client.Add(item)
+	stop_watch.Stop().LogDuration()
 
 	key := item.Key
 	delta := bytes.NewBuffer(item.Value).String()
@@ -305,7 +315,9 @@ func (p *MemcachedConnection) Increment(key string, delta uint64) (newValue uint
 	}
 
 	// Perform the memcached request
+	stop_watch := MakeStopWatch(p, p.Logger, "Increment").Start()
 	newValue, err = p.client.Increment(key, delta)
+	stop_watch.Stop().LogDuration()
 
 	switch err {
 	case nil:
@@ -343,7 +355,9 @@ func (p *MemcachedConnection) Decrement(key string, delta uint64) (newValue uint
 	}
 
 	// Perform the memcached request
+	stop_watch := MakeStopWatch(p, p.Logger, "Decrement").Start()
 	newValue, err = p.client.Decrement(key, delta)
+	stop_watch.Stop().LogDuration()
 
 	switch err {
 	case nil:

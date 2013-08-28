@@ -89,6 +89,10 @@ func (p *RedisConnection) Close() (err error) {
 // - Returns GetReply()
 //
 func (p *RedisConnection) Cmd(cmd string, args ...interface{}) *redis.Reply {
+	stop_watch := MakeStopWatch(p, p.Logger, strings.Join([]string{"Cmd", cmd}, " ")).Start()
+	defer stop_watch.LogDuration()
+	defer stop_watch.Stop()
+	
 	p.Append(cmd, args...)
 	return p.GetReply()
 }
@@ -121,6 +125,10 @@ func (p *RedisConnection) Append(cmd string, args ...interface{}) {
 	}
 
 	// Append the command
+	stop_watch := MakeStopWatch(p, p.Logger, strings.Join([]string{"Append", cmd}, " ")).Start()
+	defer stop_watch.LogDuration()
+	defer stop_watch.Stop()
+	
 	p.client.Append(cmd, args...)
 }
 
@@ -136,7 +144,9 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 	}
 
 	// Get the reply from redis
+	stop_watch := MakeStopWatch(p, p.Logger, "GetReply").Start()
 	reply := p.client.GetReply()
+	stop_watch.Stop().LogDuration()
 
 	// If the connection
 	if reply.Type == redis.ErrorReply {
@@ -169,7 +179,12 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 }
 
 func (p *RedisConnection) BatchCommands(commands []*RedisBatchCommand) error {
-	for _, command := range commands {
+	stop_watch := MakeStopWatch(p, p.Logger, "BatchCommands").Start()
+	
+	stop_watch_commands := make([]*StopWatch, len(commands))
+	for index, command := range commands {
+		stop_watch_commands[index] = MakeStopWatch(p, p.Logger, strings.Join([]string{"BatchCommands", "Cmd", command.Cmd}, " ")).Start()
+		
 		if nil == command.Args {
 			p.Append(command.Cmd)
 		} else {
@@ -182,12 +197,17 @@ func (p *RedisConnection) BatchCommands(commands []*RedisBatchCommand) error {
 	}
 
 	for index := range commands {
-		commands[index].Reply = p.GetReply()
+		command := commands[index]
+		command.Reply = p.GetReply()
+
+		stop_watch_commands[index].Stop().LogDuration()
 
 		if p.IsClosed() {
-			return errors.New("[BatchCommands] Connection closed while getting replys")
+			return errors.New(fmt.Sprintf("[BatchCommands] Connection closed while getting reply for cmd = %v", command))
 		}
 	}
+
+	stop_watch.Stop().LogDuration()
 
 	return nil
 }

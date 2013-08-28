@@ -37,7 +37,10 @@ func (p *StopWatch) Stop() *StopWatch {
 
 func (p *StopWatch) LogDuration() *StopWatch {
 	if ns := p.Duration.Nanoseconds(); ns > 0 {
-		p.Logger.Fine("[%T][%s] Executed in %d (ns)", p.Connection, p.Operation, ns)
+		micro := ns / int64(time.Microsecond)
+		milli := ns / int64(time.Millisecond)
+		sec := ns / int64(time.Second)
+		p.Logger.Fine("[%T][%s] Executed in %d ns / %d micro / %d milli / %d s", p.Connection, p.Operation, ns, micro, milli, sec)
 	}
 	return p
 }

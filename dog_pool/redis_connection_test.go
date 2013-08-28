@@ -18,7 +18,7 @@ func TestRedisConnectionSpecs(t *testing.T) {
 
 // Helpers
 func RedisConnectionSpecs(c gospec.Context) {
-	var redis_connection_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
+	var redis_connection_logger = log4go.NewDefaultLogger(log4go.FINE)
 
 	c.Specify("[RedisConnection] New connection is not open", func() {
 		connection := RedisConnection{Url: "127.0.0.1:6990", Logger: &redis_connection_logger}
