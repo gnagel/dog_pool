@@ -90,9 +90,9 @@ func (p *RedisConnection) Close() (err error) {
 //
 func (p *RedisConnection) Cmd(cmd string, args ...interface{}) *redis.Reply {
 	stop_watch := MakeStopWatch(p, p.Logger, strings.Join([]string{"Cmd", cmd}, " ")).Start()
-	defer stop_watch.LogDuration()
+	defer stop_watch.LogDurationAt(log4go.TRACE)
 	defer stop_watch.Stop()
-	
+
 	p.Append(cmd, args...)
 	return p.GetReply()
 }
@@ -125,11 +125,9 @@ func (p *RedisConnection) Append(cmd string, args ...interface{}) {
 	}
 
 	// Append the command
-	stop_watch := MakeStopWatch(p, p.Logger, strings.Join([]string{"Append", cmd}, " ")).Start()
-	defer stop_watch.LogDuration()
-	defer stop_watch.Stop()
-	
+	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "Append", cmd}).Start()
 	p.client.Append(cmd, args...)
+	stop_watch.Stop().LogDurationAt(log4go.FINEST)
 }
 
 //
@@ -144,9 +142,9 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 	}
 
 	// Get the reply from redis
-	stop_watch := MakeStopWatch(p, p.Logger, "GetReply").Start()
+	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "GetReply"}).Start()
 	reply := p.client.GetReply()
-	stop_watch.Stop().LogDuration()
+	stop_watch.Stop().LogDurationAt(log4go.FINEST)
 
 	// If the connection
 	if reply.Type == redis.ErrorReply {
@@ -179,12 +177,12 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 }
 
 func (p *RedisConnection) BatchCommands(commands []*RedisBatchCommand) error {
-	stop_watch := MakeStopWatch(p, p.Logger, "BatchCommands").Start()
-	
+	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "BatchCommands"}).Start()
+
 	stop_watch_commands := make([]*StopWatch, len(commands))
 	for index, command := range commands {
 		stop_watch_commands[index] = MakeStopWatch(p, p.Logger, strings.Join([]string{"BatchCommands", "Cmd", command.Cmd}, " ")).Start()
-		
+
 		if nil == command.Args {
 			p.Append(command.Cmd)
 		} else {
@@ -200,14 +198,14 @@ func (p *RedisConnection) BatchCommands(commands []*RedisBatchCommand) error {
 		command := commands[index]
 		command.Reply = p.GetReply()
 
-		stop_watch_commands[index].Stop().LogDuration()
+		stop_watch_commands[index].Stop().LogDurationAt(log4go.FINEST)
 
 		if p.IsClosed() {
 			return errors.New(fmt.Sprintf("[BatchCommands] Connection closed while getting reply for cmd = %v", command))
 		}
 	}
 
-	stop_watch.Stop().LogDuration()
+	stop_watch.Stop().LogDurationAt(log4go.TRACE)
 
 	return nil
 }

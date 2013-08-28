@@ -18,7 +18,7 @@ func TestMemcachedConnectionSpecs(t *testing.T) {
 
 // Helpers
 func MemcachedConnectionSpecs(c gospec.Context) {
-	var memcached_connection_logger = log4go.NewDefaultLogger(log4go.FINE)
+	var memcached_connection_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
 
 	c.Specify("[MemcachedConnection] New connection is not open", func() {
 		connection := MemcachedConnection{Url: "127.0.0.1:11290", Logger: &memcached_connection_logger}

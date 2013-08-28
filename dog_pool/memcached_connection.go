@@ -128,9 +128,9 @@ func (p *MemcachedConnection) GetMulti(keys []string) (output map[string]*memcac
 	}
 
 	// Perform the memcached request
-	stop_watch := MakeStopWatch(p, p.Logger, "GetMulti").Start()
+	stop_watch := MakeStopWatchTags(p, p.Logger, append([]string{p.Url, p.Id, "GetMulti"}, keys...)).Start()
 	output, err = p.client.GetMulti(keys)
-	stop_watch.Stop().LogDuration()
+	stop_watch.Stop().LogDurationAt(log4go.TRACE)
 
 	switch err {
 	case nil:
@@ -169,9 +169,9 @@ func (p *MemcachedConnection) Get(key string) (item *memcached.Item, err error) 
 	}
 
 	// Perform the memcached request
-	stop_watch := MakeStopWatch(p, p.Logger, "Get").Start()
+	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "Get", key}).Start()
 	item, err = p.client.Get(key)
-	stop_watch.Stop().LogDuration()
+	stop_watch.Stop().LogDurationAt(log4go.TRACE)
 
 	switch err {
 	case nil:
@@ -204,9 +204,9 @@ func (p *MemcachedConnection) Set(item *memcached.Item) (err error) {
 	}
 
 	// Perform the memcached request
-	stop_watch := MakeStopWatch(p, p.Logger, "Set").Start()
+	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "Set", item.Key}).Start()
 	err = p.client.Set(item)
-	stop_watch.Stop().LogDuration()
+	stop_watch.Stop().LogDurationAt(log4go.TRACE)
 
 	key := item.Key
 	delta := bytes.NewBuffer(item.Value).String()
@@ -238,9 +238,9 @@ func (p *MemcachedConnection) Delete(key string) (err error) {
 	}
 
 	// Perform the memcached request
-	stop_watch := MakeStopWatch(p, p.Logger, "Delete").Start()
+	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "Delete", key}).Start()
 	err = p.client.Delete(key)
-	stop_watch.Stop().LogDuration()
+	stop_watch.Stop().LogDurationAt(log4go.TRACE)
 
 	switch err {
 	case nil:
@@ -274,9 +274,9 @@ func (p *MemcachedConnection) Add(item *memcached.Item) (err error) {
 	}
 
 	// Perform the memcached request
-	stop_watch := MakeStopWatch(p, p.Logger, "Add").Start()
+	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "Add", item.Key}).Start()
 	err = p.client.Add(item)
-	stop_watch.Stop().LogDuration()
+	stop_watch.Stop().LogDurationAt(log4go.TRACE)
 
 	key := item.Key
 	delta := bytes.NewBuffer(item.Value).String()
@@ -315,9 +315,9 @@ func (p *MemcachedConnection) Increment(key string, delta uint64) (newValue uint
 	}
 
 	// Perform the memcached request
-	stop_watch := MakeStopWatch(p, p.Logger, "Increment").Start()
+	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "Increment", key}).Start()
 	newValue, err = p.client.Increment(key, delta)
-	stop_watch.Stop().LogDuration()
+	stop_watch.Stop().LogDurationAt(log4go.TRACE)
 
 	switch err {
 	case nil:
@@ -355,9 +355,9 @@ func (p *MemcachedConnection) Decrement(key string, delta uint64) (newValue uint
 	}
 
 	// Perform the memcached request
-	stop_watch := MakeStopWatch(p, p.Logger, "Decrement").Start()
+	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "Decrement", key}).Start()
 	newValue, err = p.client.Decrement(key, delta)
-	stop_watch.Stop().LogDuration()
+	stop_watch.Stop().LogDurationAt(log4go.TRACE)
 
 	switch err {
 	case nil:

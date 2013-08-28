@@ -1,22 +1,32 @@
 package dog_pool
 
+import "fmt"
+import "strings"
 import "time"
 import "github.com/alecthomas/log4go"
 
 type StopWatch struct {
 	*log4go.Logger
 	Connection interface{}
-	Operation  string
+	Tags       []string
 
 	time.Time
 	time.Duration
 }
 
-func MakeStopWatch(connection interface{}, logger *log4go.Logger, operation string) *StopWatch {
+func MakeStopWatch(connection interface{}, logger *log4go.Logger, tag string) *StopWatch {
 	output := &StopWatch{}
 	output.Logger = logger
 	output.Connection = connection
-	output.Operation = operation
+	output.Tags = []string{tag}
+	return output
+}
+
+func MakeStopWatchTags(connection interface{}, logger *log4go.Logger, tags []string) *StopWatch {
+	output := &StopWatch{}
+	output.Logger = logger
+	output.Connection = connection
+	output.Tags = tags
 	return output
 }
 
@@ -36,11 +46,17 @@ func (p *StopWatch) Stop() *StopWatch {
 }
 
 func (p *StopWatch) LogDuration() *StopWatch {
+	return p.LogDurationAt(log4go.FINEST)
+}
+
+func (p *StopWatch) LogDurationAt(level log4go.Level) *StopWatch {
 	if ns := p.Duration.Nanoseconds(); ns > 0 {
 		micro := ns / int64(time.Microsecond)
 		milli := ns / int64(time.Millisecond)
 		sec := ns / int64(time.Second)
-		p.Logger.Fine("[%T][%s] Executed in %d ns / %d micro / %d milli / %d s", p.Connection, p.Operation, ns, micro, milli, sec)
+		p.Logger.Logc(level, func() string {
+			return fmt.Sprintf("[%T | %s] Executed in %d ns / %d micro / %d milli / %d s", p.Connection, strings.Join(p.Tags, " | "), ns, micro, milli, sec)
+		})
 	}
 	return p
 }

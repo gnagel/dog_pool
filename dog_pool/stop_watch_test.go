@@ -20,7 +20,7 @@ func StopWatchSpecs(c gospec.Context) {
 		c.Expect(value, gospec.Satisfies, nil != value)
 		c.Expect(value.Logger, gospec.Equals, &logger)
 		c.Expect(value.Connection, gospec.Equals, c)
-		c.Expect(value.Operation, gospec.Equals, "Make")
+		c.Expect(value.Tags[0], gospec.Equals, "Make")
 		c.Expect(value.Time, gospec.Satisfies, value.Time.IsZero())
 		c.Expect(value.Duration, gospec.Equals, time.Duration(0))
 	})
@@ -31,7 +31,7 @@ func StopWatchSpecs(c gospec.Context) {
 		c.Expect(value, gospec.Satisfies, nil != value)
 		c.Expect(value.Logger, gospec.Equals, &logger)
 		c.Expect(value.Connection, gospec.Equals, c)
-		c.Expect(value.Operation, gospec.Equals, "Make")
+		c.Expect(value.Tags[0], gospec.Equals, "Make")
 		c.Expect(value.Time, gospec.Satisfies, value.Time.IsZero())
 		c.Expect(value.Duration, gospec.Equals, time.Duration(0))
 
@@ -48,7 +48,7 @@ func StopWatchSpecs(c gospec.Context) {
 		c.Expect(value, gospec.Satisfies, nil != value)
 		c.Expect(value.Logger, gospec.Equals, &logger)
 		c.Expect(value.Connection, gospec.Equals, c)
-		c.Expect(value.Operation, gospec.Equals, "Make")
+		c.Expect(value.Tags[0], gospec.Equals, "Make")
 		c.Expect(value.Time, gospec.Satisfies, value.Time.IsZero())
 		c.Expect(value.Duration, gospec.Equals, time.Duration(0))
 
@@ -76,7 +76,7 @@ func StopWatchSpecs(c gospec.Context) {
 		c.Expect(value, gospec.Satisfies, nil != value)
 		c.Expect(value.Logger, gospec.Equals, &logger)
 		c.Expect(value.Connection, gospec.Equals, c)
-		c.Expect(value.Operation, gospec.Equals, "Make")
+		c.Expect(value.Tags[0], gospec.Equals, "Make")
 		c.Expect(value.Time, gospec.Satisfies, value.Time.IsZero())
 		c.Expect(value.Duration, gospec.Equals, time.Duration(0))
 
