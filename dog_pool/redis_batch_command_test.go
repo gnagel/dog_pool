@@ -29,6 +29,11 @@ func RedisBatchCommandSpecs(c gospec.Context) {
 		c.Expect(command.Args[2], gospec.Equals, "A")
 		c.Expect(command.Args[3], gospec.Equals, "B")
 		c.Expect(command.Args[4], gospec.Equals, "C")
+
+		c.Expect(command.IsBitop(), gospec.Equals, true)
+		c.Expect(command.IsBitopAnd(), gospec.Equals, true)
+		c.Expect(command.IsBitopOr(), gospec.Equals, false)
+		c.Expect(command.IsBitopNot(), gospec.Equals, false)
 	})
 
 	c.Specify("[MakeBitopOr] Makes Bitop Command", func() {
@@ -40,6 +45,11 @@ func RedisBatchCommandSpecs(c gospec.Context) {
 		c.Expect(command.Args[2], gospec.Equals, "A")
 		c.Expect(command.Args[3], gospec.Equals, "B")
 		c.Expect(command.Args[4], gospec.Equals, "C")
+
+		c.Expect(command.IsBitop(), gospec.Equals, true)
+		c.Expect(command.IsBitopAnd(), gospec.Equals, false)
+		c.Expect(command.IsBitopOr(), gospec.Equals, true)
+		c.Expect(command.IsBitopNot(), gospec.Equals, false)
 	})
 
 	c.Specify("[MakeBitopNot] Makes Bitop Command", func() {
@@ -51,6 +61,11 @@ func RedisBatchCommandSpecs(c gospec.Context) {
 		c.Expect(command.Args[2], gospec.Equals, "A")
 		c.Expect(command.Args[3], gospec.Equals, "B")
 		c.Expect(command.Args[4], gospec.Equals, "C")
+
+		c.Expect(command.IsBitop(), gospec.Equals, true)
+		c.Expect(command.IsBitopAnd(), gospec.Equals, false)
+		c.Expect(command.IsBitopOr(), gospec.Equals, false)
+		c.Expect(command.IsBitopNot(), gospec.Equals, true)
 	})
 
 	c.Specify("[MakeBitCount] Makes Bitop Command", func() {
@@ -58,6 +73,11 @@ func RedisBatchCommandSpecs(c gospec.Context) {
 		c.Expect(command.Cmd, gospec.Equals, "BITCOUNT")
 		c.Expect(len(command.Args), gospec.Equals, 1)
 		c.Expect(command.Args[0], gospec.Equals, "A")
+
+		c.Expect(command.IsBitop(), gospec.Equals, false)
+		c.Expect(command.IsBitopAnd(), gospec.Equals, false)
+		c.Expect(command.IsBitopOr(), gospec.Equals, false)
+		c.Expect(command.IsBitopNot(), gospec.Equals, false)
 	})
 
 	c.Specify("[SelectBitopDestKeys] Selects only the destination keys from BITOP ... commands", func() {

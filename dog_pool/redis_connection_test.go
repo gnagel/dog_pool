@@ -141,6 +141,20 @@ func Benchmark_RedisConnection_Set(b *testing.B) {
 	}
 }
 
+func Benchmark_RedisConnection_Del_CacheMiss(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := dog_pool_utils.StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		server.Connection().Cmd("DEL", "BOB", "Hello", "World", "GARY", "THE", "SNAIL")
+	}
+}
+
 func Benchmark_RedisConnection_SetGet(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 	server, err := dog_pool_utils.StartRedisServer(&logger)
@@ -153,5 +167,44 @@ func Benchmark_RedisConnection_SetGet(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		server.Connection().Cmd("SET", "BOB", "Hello")
 		server.Connection().Cmd("GET", "BOB")
+	}
+}
+
+func Benchmark_RedisConnection_BitOp_Or(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := dog_pool_utils.StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	for i := 0; i < 1024; i++ {
+		server.Connection().Cmd("SETBIT", "ALL", i, true)
+		server.Connection().Cmd("SETBIT", "BOB", i, i%2 == 0)
+		server.Connection().Cmd("SETBIT", "Not-BOB", i, i%2 == 1)
+		server.Connection().Cmd("SETBIT", "GARY", i, i%4 == 0)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		server.Connection().Cmd("BITOP", "OR", "ALL", "BOB", "Not-BOB", "GARY", "Cache-Miss")
+	}
+}
+
+func Benchmark_RedisConnection_Bit_Get(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := dog_pool_utils.StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	for i := 0; i < 1024; i++ {
+		server.Connection().Cmd("SETBIT", "ALL", i, true)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		server.Connection().Cmd("GET", "ALL")
 	}
 }

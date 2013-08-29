@@ -21,6 +21,26 @@ func (p *RedisBatchCommand) String() string {
 	return fmt.Sprintf("%s %s --> %#v", p.Cmd, strings.Join(p.Args, " "), p.Reply)
 }
 
+func (p *RedisBatchCommand) AppendToArgs(args ...string) {
+	p.Args = append(p.Args, args...)
+}
+
+func (p *RedisBatchCommand) IsBitop() bool {
+	return p.Cmd == BITOP
+}
+
+func (p *RedisBatchCommand) IsBitopAnd() bool {
+	return p.Cmd == BITOP && len(p.Args) > 0 && p.Args[0] == BIT_AND
+}
+
+func (p *RedisBatchCommand) IsBitopOr() bool {
+	return p.Cmd == BITOP && len(p.Args) > 0 && p.Args[0] == BIT_OR
+}
+
+func (p *RedisBatchCommand) IsBitopNot() bool {
+	return p.Cmd == BITOP && len(p.Args) > 0 && p.Args[0] == BIT_NOT
+}
+
 func MakeBitopAnd(dest string, sources []string) *RedisBatchCommand {
 	return makeBitopCommand(BIT_AND, dest, sources)
 }
