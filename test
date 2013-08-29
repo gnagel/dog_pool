@@ -46,7 +46,7 @@ echo ""
 # 
 # Run the tests
 # 
-go test -v ./dog_pool/... || exit $?
+go test ./dog_pool/... -bench=".*" || exit $?
 
 echo ""
 echo ".................................................................."

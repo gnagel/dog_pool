@@ -40,6 +40,10 @@ func StartMemcachedServer(logger *log4go.Logger) (*MemcachedServerProcess, error
 	return server, nil
 }
 
+func (p *MemcachedServerProcess) Url() string {
+	return fmt.Sprintf("127.0.0.1:%d", p.port)
+}
+
 //
 // Close the memcached-server and memcached-connection
 //
@@ -70,7 +74,7 @@ func (p *MemcachedServerProcess) Connection() *dog_pool.MemcachedConnection {
 
 	if nil == p.connection {
 		p.connection = &dog_pool.MemcachedConnection{
-			Url:    fmt.Sprintf("127.0.0.1:%d", p.port),
+			Url:    p.Url(),
 			Logger: p.logger,
 		}
 	}

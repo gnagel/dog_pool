@@ -15,7 +15,7 @@ func TestStopWatchSpecs(t *testing.T) {
 func StopWatchSpecs(c gospec.Context) {
 
 	c.Specify("[StopWatch] Makes StopWatch", func() {
-		logger := log4go.NewDefaultLogger(log4go.FINEST)
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		value := MakeStopWatch(c, &logger, "Make")
 		c.Expect(value, gospec.Satisfies, nil != value)
 		c.Expect(value.Logger, gospec.Equals, &logger)
@@ -26,7 +26,7 @@ func StopWatchSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[StopWatch] Starts StopWatch", func() {
-		logger := log4go.NewDefaultLogger(log4go.FINEST)
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		value := MakeStopWatch(c, &logger, "Make")
 		c.Expect(value, gospec.Satisfies, nil != value)
 		c.Expect(value.Logger, gospec.Equals, &logger)
@@ -43,7 +43,7 @@ func StopWatchSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[StopWatch] Stops StopWatch", func() {
-		logger := log4go.NewDefaultLogger(log4go.FINEST)
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		value := MakeStopWatch(c, &logger, "Make")
 		c.Expect(value, gospec.Satisfies, nil != value)
 		c.Expect(value.Logger, gospec.Equals, &logger)
@@ -71,7 +71,7 @@ func StopWatchSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[StopWatch] Logs StopWatch", func() {
-		logger := log4go.NewDefaultLogger(log4go.FINEST)
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		value := MakeStopWatch(c, &logger, "Make")
 		c.Expect(value, gospec.Satisfies, nil != value)
 		c.Expect(value.Logger, gospec.Equals, &logger)
