@@ -40,19 +40,17 @@ func MakeGetBit(key string, index int64) *RedisBatchCommand {
 	return output
 }
 
-
 func MakeSetBit(key string, index int64, state bool) *RedisBatchCommand {
 	state_str := "1"
-	if (!state) {
-		state_str ="0"
+	if !state {
+		state_str = "0"
 	}
-	
+
 	output := &RedisBatchCommand{}
 	output.Cmd = "SETBIT"
 	output.Args = []string{key, fmt.Sprintf("%d", index), state_str}
 	return output
 }
-
 
 func MakeBitCount(key string) *RedisBatchCommand {
 	output := &RedisBatchCommand{}
