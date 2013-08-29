@@ -40,8 +40,9 @@ func MakeGetBit(key string, index int64) *RedisBatchCommand {
 	return output
 }
 
+
 func MakeSetBit(key string, index int64, state bool) *RedisBatchCommand {
-	state_str = "1"
+	state_str := "1"
 	if (!state) {
 		state_str ="0"
 	}
