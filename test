@@ -35,18 +35,13 @@ gofmt -s -w $GOPATH/dog_pool
 echo ""
 
 
-# Run the tests
-# This will run the "all_spec_test.go" suite of tests
 echo ""
 echo ".................................................................."
 echo "Running tests ...................................................."
 echo ".................................................................."
 echo ""
 
-# 
-# Run the tests
-# 
-go test ./dog_pool/... -bench=".*" || exit $?
+go test -bench=".*" ./dog_pool/... || exit $?
 
 echo ""
 echo ".................................................................."

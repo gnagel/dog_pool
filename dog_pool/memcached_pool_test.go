@@ -3,7 +3,6 @@ package dog_pool
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
 import "github.com/alecthomas/log4go"
-import dog_pool_utils "./utils"
 
 //
 // NOTE: Use differient ports for each test!
@@ -93,7 +92,7 @@ func MemcachedPoolSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[MemcachedConnectionPool] Opening connection to Valid Host/Port has no errors", func() {
-		server, err := dog_pool_utils.StartMemcachedServer(&memcached_pool_logger)
+		server, err := StartMemcachedServer(&memcached_pool_logger)
 		if nil != err {
 			panic(err)
 		}
@@ -109,7 +108,7 @@ func MemcachedPoolSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[MemcachedConnectionPool] 10x AGRESSIVE Pool Pops 10x open connections", func() {
-		server, err := dog_pool_utils.StartMemcachedServer(&memcached_pool_logger)
+		server, err := StartMemcachedServer(&memcached_pool_logger)
 		if nil != err {
 			panic(err)
 		}
@@ -136,7 +135,7 @@ func MemcachedPoolSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[MemcachedConnectionPool] 10x LAZY Pool Pops 10x closed connections", func() {
-		server, err := dog_pool_utils.StartMemcachedServer(&memcached_pool_logger)
+		server, err := StartMemcachedServer(&memcached_pool_logger)
 		if nil != err {
 			panic(err)
 		}

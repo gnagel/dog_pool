@@ -3,7 +3,6 @@ package dog_pool
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
 import "github.com/alecthomas/log4go"
-import dog_pool_utils "./utils"
 
 //
 // NOTE: Use differient ports for each test!
@@ -47,7 +46,7 @@ func RedisConnectionSpecs(c gospec.Context) {
 
 	c.Specify("[RedisConnection] Opening connection to Valid Host/Port has no errors", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-		server, err := dog_pool_utils.StartRedisServer(&logger)
+		server, err := StartRedisServer(&logger)
 		if nil != err {
 			panic(err)
 		}
@@ -60,7 +59,7 @@ func RedisConnectionSpecs(c gospec.Context) {
 
 	c.Specify("[RedisConnection] Ping (-->Cmd-->Append+GetReply) (re-)opens the connection automatically", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-		server, err := dog_pool_utils.StartRedisServer(&logger)
+		server, err := StartRedisServer(&logger)
 		if nil != err {
 			panic(err)
 		}
@@ -86,34 +85,11 @@ func RedisConnectionSpecs(c gospec.Context) {
 		c.Expect(server.Connection().IsClosed(), gospec.Equals, false)
 	})
 
-	// c.Specify("[RedisConnection] BatchCommands batches commands w/o Multi Exec or transactions", func() {
-	// 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	// 	server, err := dog_pool_utils.StartRedisServer(&logger)
-	// 	if nil != err {
-	// 		panic(err)
-	// 	}
-	// 	defer server.Close()
-	//
-	// 	// Starts off closed ...
-	// 	c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
-	//
-	// 	commands := make([]*RedisBatchCommand, 4)
-	// 	commands[0] = &RedisBatchCommand{Cmd: "SET", Args: []string{"BOB", "1"}}
-	// 	commands[1] = &RedisBatchCommand{Cmd: "GET", Args: []string{"BOB"}}
-	// 	commands[2] = &RedisBatchCommand{Cmd: "DEL", Args: []string{"BOB"}}
-	// 	commands[3] = &RedisBatchCommand{Cmd: "GET", Args: []string{"MISS"}}
-	//
-	// 	// Execute the commands
-	// 	// Should now be open
-	// 	c.Expect(server.Connection().BatchCommands(commands), gospec.Equals, nil)
-	// 	c.Expect(server.Connection().IsOpen(), gospec.Equals, true)
-	// })
-
 }
 
 func Benchmark_RedisConnection_Get(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	server, err := dog_pool_utils.StartRedisServer(&logger)
+	server, err := StartRedisServer(&logger)
 	if nil != err {
 		panic(err)
 	}
@@ -129,7 +105,7 @@ func Benchmark_RedisConnection_Get(b *testing.B) {
 
 func Benchmark_RedisConnection_Set(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	server, err := dog_pool_utils.StartRedisServer(&logger)
+	server, err := StartRedisServer(&logger)
 	if nil != err {
 		panic(err)
 	}
@@ -143,7 +119,7 @@ func Benchmark_RedisConnection_Set(b *testing.B) {
 
 func Benchmark_RedisConnection_Del_CacheMiss(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	server, err := dog_pool_utils.StartRedisServer(&logger)
+	server, err := StartRedisServer(&logger)
 	if nil != err {
 		panic(err)
 	}
@@ -157,7 +133,7 @@ func Benchmark_RedisConnection_Del_CacheMiss(b *testing.B) {
 
 func Benchmark_RedisConnection_SetGet(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	server, err := dog_pool_utils.StartRedisServer(&logger)
+	server, err := StartRedisServer(&logger)
 	if nil != err {
 		panic(err)
 	}
@@ -170,9 +146,48 @@ func Benchmark_RedisConnection_SetGet(b *testing.B) {
 	}
 }
 
+func Benchmark_RedisConnection_Bit_Get(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	for i := 0; i < 1024; i++ {
+		server.Connection().Cmd("SETBIT", "ALL", i, true)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		server.Connection().Cmd("GET", "ALL")
+	}
+}
+
+func Benchmark_RedisConnection_BitOp_And(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	for i := 0; i < 1024; i++ {
+		server.Connection().Cmd("SETBIT", "ALL", i, true)
+		server.Connection().Cmd("SETBIT", "BOB", i, i%2 == 0)
+		server.Connection().Cmd("SETBIT", "Not-BOB", i, i%2 == 1)
+		server.Connection().Cmd("SETBIT", "GARY", i, i%4 == 0)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		server.Connection().Cmd("BITOP", "AND", "ALL", "BOB", "Not-BOB", "GARY", "Cache-Miss")
+	}
+}
+
 func Benchmark_RedisConnection_BitOp_Or(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	server, err := dog_pool_utils.StartRedisServer(&logger)
+	server, err := StartRedisServer(&logger)
 	if nil != err {
 		panic(err)
 	}
@@ -191,9 +206,9 @@ func Benchmark_RedisConnection_BitOp_Or(b *testing.B) {
 	}
 }
 
-func Benchmark_RedisConnection_Bit_Get(b *testing.B) {
+func Benchmark_RedisConnection_BitOp_Not(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	server, err := dog_pool_utils.StartRedisServer(&logger)
+	server, err := StartRedisServer(&logger)
 	if nil != err {
 		panic(err)
 	}
@@ -201,10 +216,13 @@ func Benchmark_RedisConnection_Bit_Get(b *testing.B) {
 
 	for i := 0; i < 1024; i++ {
 		server.Connection().Cmd("SETBIT", "ALL", i, true)
+		server.Connection().Cmd("SETBIT", "BOB", i, i%2 == 0)
+		server.Connection().Cmd("SETBIT", "Not-BOB", i, i%2 == 1)
+		server.Connection().Cmd("SETBIT", "GARY", i, i%4 == 0)
 	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		server.Connection().Cmd("GET", "ALL")
+		server.Connection().Cmd("BITOP", "NOT", "ALL", "BOB", "Not-BOB", "GARY", "Cache-Miss")
 	}
 }

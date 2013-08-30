@@ -53,14 +53,12 @@ func RedisBatchCommandSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[MakeBitopNot] Makes Bitop Command", func() {
-		command := MakeBitopNot("DEST", []string{"A", "B", "C"})
+		command := MakeBitopNot("DEST", "A")
 		c.Expect(command.Cmd, gospec.Equals, "BITOP")
-		c.Expect(len(command.Args), gospec.Equals, 5)
+		c.Expect(len(command.Args), gospec.Equals, 3)
 		c.Expect(command.Args[0], gospec.Equals, "NOT")
 		c.Expect(command.Args[1], gospec.Equals, "DEST")
 		c.Expect(command.Args[2], gospec.Equals, "A")
-		c.Expect(command.Args[3], gospec.Equals, "B")
-		c.Expect(command.Args[4], gospec.Equals, "C")
 
 		c.Expect(command.IsBitop(), gospec.Equals, true)
 		c.Expect(command.IsBitopAnd(), gospec.Equals, false)
@@ -83,7 +81,7 @@ func RedisBatchCommandSpecs(c gospec.Context) {
 	c.Specify("[SelectBitopDestKeys] Selects only the destination keys from BITOP ... commands", func() {
 		commands := []*RedisBatchCommand{}
 		commands = append(commands, MakeBitCount("A"))
-		commands = append(commands, MakeBitopNot("NOT-1", []string{"A", "B", "C"}))
+		commands = append(commands, MakeBitopNot("NOT-1", "A"))
 		commands = append(commands, MakeGet("C"))
 		commands = append(commands, MakeBitopAnd("AND-2", []string{"A", "B", "C"}))
 		commands = append(commands, MakeDelete([]string{"D"}))

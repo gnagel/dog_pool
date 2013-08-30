@@ -3,7 +3,6 @@ package dog_pool
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
 import "github.com/alecthomas/log4go"
-import dog_pool_utils "./utils"
 import memcached "github.com/bradfitz/gomemcache/memcache"
 
 //
@@ -39,7 +38,7 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 
 	c.Specify("[MemcachedConnection] Opening connection to Valid Host/Port has no errors", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-		server, err := dog_pool_utils.StartMemcachedServer(&logger)
+		server, err := StartMemcachedServer(&logger)
 		if nil != err {
 			panic(err)
 		}
@@ -52,7 +51,7 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 
 	c.Specify("[MemcachedConnection] Ping (-->Set-->Delete) (re-)opens the connection automatically", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-		server, err := dog_pool_utils.StartMemcachedServer(&logger)
+		server, err := StartMemcachedServer(&logger)
 		if nil != err {
 			panic(err)
 		}
@@ -79,7 +78,7 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 
 	c.Specify("[MemcachedConnection][Get] Returns Cache Miss", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-		server, err := dog_pool_utils.StartMemcachedServer(&logger)
+		server, err := StartMemcachedServer(&logger)
 		if nil != err {
 			panic(err)
 		}
@@ -92,7 +91,7 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 
 	c.Specify("[MemcachedConnection][Set+Get] Returns Value", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-		server, err := dog_pool_utils.StartMemcachedServer(&logger)
+		server, err := StartMemcachedServer(&logger)
 		if nil != err {
 			panic(err)
 		}
@@ -111,7 +110,7 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 
 func Benchmark_MemcachedConnection_Get(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	server, err := dog_pool_utils.StartMemcachedServer(&logger)
+	server, err := StartMemcachedServer(&logger)
 	if nil != err {
 		panic(err)
 	}
@@ -127,7 +126,7 @@ func Benchmark_MemcachedConnection_Get(b *testing.B) {
 
 func Benchmark_MemcachedConnection_Set(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	server, err := dog_pool_utils.StartMemcachedServer(&logger)
+	server, err := StartMemcachedServer(&logger)
 	if nil != err {
 		panic(err)
 	}
@@ -141,7 +140,7 @@ func Benchmark_MemcachedConnection_Set(b *testing.B) {
 
 func Benchmark_MemcachedConnection_SetGet(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
-	server, err := dog_pool_utils.StartMemcachedServer(&logger)
+	server, err := StartMemcachedServer(&logger)
 	if nil != err {
 		panic(err)
 	}

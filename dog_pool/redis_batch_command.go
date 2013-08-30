@@ -49,8 +49,8 @@ func MakeBitopOr(dest string, sources []string) *RedisBatchCommand {
 	return makeBitopCommand(BIT_OR, dest, sources)
 }
 
-func MakeBitopNot(dest string, sources []string) *RedisBatchCommand {
-	return makeBitopCommand(BIT_NOT, dest, sources)
+func MakeBitopNot(dest string, source string) *RedisBatchCommand {
+	return makeBitopCommand(BIT_NOT, dest, []string{source})
 }
 
 func MakeGetBit(key string, index int64) *RedisBatchCommand {
