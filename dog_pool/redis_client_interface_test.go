@@ -11,7 +11,7 @@ import "github.com/fzzy/radix/redis"
 import "github.com/orfjackal/gospec/src/gospec"
 
 func TestRedisClientInterfaceSpecs(t *testing.T) {
-	if !testing.Short() {
+	if testing.Short() {
 		t.Skip("skipping test in benchmark mode.")
 		return
 	}

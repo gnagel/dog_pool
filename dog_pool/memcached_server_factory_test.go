@@ -9,7 +9,7 @@ import "github.com/alecthomas/log4go"
 //       gospec runs the specs in parallel!
 //
 func TestMemcachedServerProcessSpecs(t *testing.T) {
-	if !testing.Short() {
+	if testing.Short() {
 		t.Skip("skipping test in benchmark mode.")
 		return
 	}

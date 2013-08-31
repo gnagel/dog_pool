@@ -8,7 +8,7 @@ import "github.com/orfjackal/gospec/src/gospec"
 //       gospec runs the specs in parallel!
 //
 func TestFindPortSpecs(t *testing.T) {
-	if !testing.Short() {
+	if testing.Short() {
 		t.Skip("skipping test in benchmark mode.")
 		return
 	}
