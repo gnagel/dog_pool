@@ -6,6 +6,10 @@ import "github.com/orfjackal/gospec/src/gospec"
 import "github.com/alecthomas/log4go"
 
 func TestStopWatchSpecs(t *testing.T) {
+	if !testing.Short() {
+		t.Skip("skipping test in benchmark mode.")
+		return
+	}
 	r := gospec.NewRunner()
 	r.AddSpec(StopWatchSpecs)
 	gospec.MainGoTest(r, t)

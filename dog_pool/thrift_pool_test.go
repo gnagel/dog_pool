@@ -12,6 +12,10 @@ import "github.com/orfjackal/gospec/src/gospec"
 //       gospec runs the specs in parallel!
 //
 func TestThriftPoolSpecs(t *testing.T) {
+	if !testing.Short() {
+		t.Skip("skipping test in benchmark mode.")
+		return
+	}
 	r := gospec.NewRunner()
 	// r.AddSpec(ThriftPoolSpecs)
 	gospec.MainGoTest(r, t)

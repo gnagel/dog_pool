@@ -11,6 +11,10 @@ import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
 
 func TestMemcachedClientInterfaceSpecs(t *testing.T) {
+	if !testing.Short() {
+		t.Skip("skipping test in benchmark mode.")
+		return
+	}
 	r := gospec.NewRunner()
 	r.AddSpec(MemcachedClientInterfaceSpecs)
 	gospec.MainGoTest(r, t)

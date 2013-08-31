@@ -9,6 +9,10 @@ import "github.com/alecthomas/log4go"
 //       gospec runs the specs in parallel!
 //
 func TestRedisServerProcessSpecs(t *testing.T) {
+	if !testing.Short() {
+		t.Skip("skipping test in benchmark mode.")
+		return
+	}
 	r := gospec.NewRunner()
 	r.AddSpec(RedisServerProcessSpecs)
 	gospec.MainGoTest(r, t)
