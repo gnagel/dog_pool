@@ -1,6 +1,7 @@
 package dog_pool
 
 import "fmt"
+import "strings"
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
 import "github.com/alecthomas/log4go"
@@ -136,6 +137,21 @@ func Benchmark_RedisConnection_Del_CacheMiss(b *testing.B) {
 	}
 }
 
+// Pre-format the commands as a single string, and compare the results to above
+func Benchmark_RedisConnection_Del_CacheMiss_Str(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		server.Connection().Cmd("DEL BOB Hello World GARY THE SNAIL")
+	}
+}
+
 func Benchmark_RedisConnection_SetGet(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 	server, err := StartRedisServer(&logger)
@@ -190,6 +206,28 @@ func Benchmark_RedisConnection_BitOp_And(b *testing.B) {
 	}
 }
 
+// Pre-format the commands as a single string, and compare the results to above
+func Benchmark_RedisConnection_BitOp_And_Str(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	for i := 0; i < 1024; i++ {
+		server.Connection().Cmd("SETBIT", "ALL", i, true)
+		server.Connection().Cmd("SETBIT", "BOB", i, i%2 == 0)
+		server.Connection().Cmd("SETBIT", "Not-BOB", i, i%2 == 1)
+		server.Connection().Cmd("SETBIT", "GARY", i, i%4 == 0)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		server.Connection().Cmd("BITOP AND ALL BOB Not-BOB GARY Cache-Miss")
+	}
+}
+
 func Benchmark_RedisConnection_BitOp_Or(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 	server, err := StartRedisServer(&logger)
@@ -208,6 +246,28 @@ func Benchmark_RedisConnection_BitOp_Or(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		server.Connection().Cmd("BITOP", "OR", "ALL", "BOB", "Not-BOB", "GARY", "Cache-Miss")
+	}
+}
+
+// Pre-format the commands as a single string, and compare the results to above
+func Benchmark_RedisConnection_BitOp_Or_Str(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	for i := 0; i < 1024; i++ {
+		server.Connection().Cmd("SETBIT", "ALL", i, true)
+		server.Connection().Cmd("SETBIT", "BOB", i, i%2 == 0)
+		server.Connection().Cmd("SETBIT", "Not-BOB", i, i%2 == 1)
+		server.Connection().Cmd("SETBIT", "GARY", i, i%4 == 0)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		server.Connection().Cmd("BITOP OR ALL BOB Not-BOB GARY Cache-Miss")
 	}
 }
 
@@ -313,5 +373,78 @@ func Benchmark_RedisConnection_BitOp_ComplementSet(b *testing.B) {
 			server.Connection().Cmd("BITCOUNT", key)
 		}
 		server.Connection().Cmd("GET", "Complement")
+	}
+}
+
+// Pre-format the commands as a single string, and compare the results to above
+func Benchmark_RedisConnection_BitOp_ComplementSet_Str(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	keys_all := [][]string{make([]string, 10), make([]string, 10)}
+	keys_bob := [][]string{make([]string, 10), make([]string, 10)}
+	keys_not_bob := [][]string{make([]string, 10), make([]string, 10)}
+	keys_gary := [][]string{make([]string, 10), make([]string, 10)}
+	keys_not_gary := [][]string{make([]string, 10), make([]string, 10)}
+	for i := 0; i < 10; i++ {
+		for j := 0; j <= 1; j++ {
+			keys_all[j][i] = fmt.Sprintf("ALL:%d:%d", j, i)
+			keys_bob[j][i] = fmt.Sprintf("BOB:%d:%d", j, i)
+			keys_not_bob[j][i] = fmt.Sprintf("Not-BOB:%d:%d", j, i)
+			keys_gary[j][i] = fmt.Sprintf("GARY:%d:%d", j, i)
+			keys_not_gary[j][i] = fmt.Sprintf("Not-GARY:%d:%d", j, i)
+		}
+	}
+
+	for i := 0; i < 1024; i++ {
+		for j := 0; j < 10; j++ {
+			for k := 0; k <= 1; k++ {
+				server.Connection().Cmd("SETBIT", keys_all[k][j], i, true)
+				server.Connection().Cmd("SETBIT", keys_bob[k][j], i, i%2 == 0)
+				server.Connection().Cmd("SETBIT", keys_not_bob[k][j], i, i%2 == 1)
+				server.Connection().Cmd("SETBIT", keys_gary[k][j], i, i%4 == 0)
+				server.Connection().Cmd("SETBIT", keys_not_gary[k][j], i, i%4 == 0)
+			}
+		}
+	}
+
+	cmds := [11]string{}
+	cmds[0] = fmt.Sprintf("BITOP AND ALL:0 %s", strings.Join(keys_all[0], " "))
+	cmds[1] = fmt.Sprintf("BITOP AND ALL:1 %s", strings.Join(keys_all[1], " "))
+	cmds[2] = fmt.Sprintf("BITOP AND BOB:0 %s", strings.Join(keys_bob[0], " "))
+	cmds[3] = fmt.Sprintf("BITOP AND BOB:1 %s", strings.Join(keys_bob[1], " "))
+	cmds[4] = fmt.Sprintf("BITOP AND Not-BOB:0 %s", strings.Join(keys_not_bob[0], " "))
+	cmds[5] = fmt.Sprintf("BITOP AND Not-BOB:1 %s", strings.Join(keys_not_bob[1], " "))
+	cmds[6] = fmt.Sprintf("BITOP AND GARY:0 %s", strings.Join(keys_gary[0], " "))
+	cmds[7] = fmt.Sprintf("BITOP AND GARY:1 %s", strings.Join(keys_gary[1], " "))
+	cmds[8] = fmt.Sprintf("BITOP AND Not-GARY:0 %s", strings.Join(keys_not_gary[0], " "))
+	cmds[9] = fmt.Sprintf("BITOP AND Not-GARY:0 %s", strings.Join(keys_not_gary[0], " "))
+	cmds[10] = fmt.Sprintf("BITOP OR Not-GARY:1 %s", strings.Join(keys_not_gary[1], " "))
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for _, cmd := range cmds {
+			server.Connection().Cmd(cmd)
+		}
+		server.Connection().Cmd("BITOP NOT Not-GARY:1 Not-GARY:1")
+		server.Connection().Cmd("BITOP AND Complement Not-GARY:1 ALL:0 ALL:1 BOB:0 BOB:1 Not-BOB:0 Not-BOB:1 GARY:0 GARY:1 Not-GARY:0")
+
+		server.Connection().Cmd("BITCOUNT Complement")
+		server.Connection().Cmd("BITCOUNT Not-GARY:1")
+		server.Connection().Cmd("BITCOUNT ALL:0")
+		server.Connection().Cmd("BITCOUNT ALL:1")
+		server.Connection().Cmd("BITCOUNT BOB:0")
+		server.Connection().Cmd("BITCOUNT BOB:1")
+		server.Connection().Cmd("BITCOUNT Not-BOB:0")
+		server.Connection().Cmd("BITCOUNT Not-BOB:1")
+		server.Connection().Cmd("BITCOUNT GARY:0")
+		server.Connection().Cmd("BITCOUNT GARY:1")
+		server.Connection().Cmd("BITCOUNT Not-GARY:0")
+
+		server.Connection().Cmd("GET Complement")
 	}
 }
