@@ -58,6 +58,14 @@ func makeAgressiveRedisConnection(url string, id string, timeout time.Duration, 
 }
 
 //
+// Clone the connection and return a new instance of RedisConnection
+//
+func (p *RedisConnection) Clone() *RedisConnection {
+	connection, _ := makeLazyRedisConnection(p.Url, p.Id, p.Timeout, p.Logger)
+	return connection
+}
+
+//
 //  ========================================
 //
 // RedisClientInterface -and- redis.Client implementation:

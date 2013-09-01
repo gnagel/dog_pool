@@ -24,6 +24,19 @@ func TestRedisConnectionSpecs(t *testing.T) {
 func RedisConnectionSpecs(c gospec.Context) {
 	var redis_connection_logger = log4go.NewDefaultLogger(log4go.CRITICAL)
 
+	c.Specify("[RedisConnection] Clone a connection", func() {
+		connection := &RedisConnection{Url: "127.0.0.1:6990", Id: "Bob", Logger: &redis_connection_logger}
+		defer connection.Close()
+		c.Expect(connection.IsOpen(), gospec.Equals, false)
+
+		connection2 := connection.Clone()
+		defer connection2.Close()
+		c.Expect(connection2.IsOpen(), gospec.Equals, false)
+
+		// Should be differient pointers
+		c.Expect(connection2, gospec.Satisfies, connection != connection2)
+	})
+
 	c.Specify("[RedisConnection] New connection is not open", func() {
 		connection := RedisConnection{Url: "127.0.0.1:6990", Logger: &redis_connection_logger}
 		defer connection.Close()
