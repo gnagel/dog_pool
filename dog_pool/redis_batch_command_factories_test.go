@@ -102,6 +102,45 @@ func RedisBatchCommandFactorySpecs(c gospec.Context) {
 		c.Expect(value.GetArgs()[1], gospec.Equals, "Bob")
 	})
 
+	c.Specify("[MakeRedisBatchCommand][Hash Delete] Makes command", func() {
+		value := MakeRedisBatchCommandHashDelete("A", "B", "C")
+		c.Expect(value, gospec.Satisfies, nil != value)
+		c.Expect(value.GetCmd(), gospec.Equals, "HDEL")
+		c.Expect(len(value.GetArgs()), gospec.Equals, 3)
+		c.Expect(value.GetArgs()[0], gospec.Equals, "A")
+		c.Expect(value.GetArgs()[1], gospec.Equals, "B")
+		c.Expect(value.GetArgs()[2], gospec.Equals, "C")
+	})
+
+	c.Specify("[MakeRedisBatchCommand][Hash Mget] Makes command", func() {
+		value := MakeRedisBatchCommandHashMget("A", "B", "C")
+		c.Expect(value, gospec.Satisfies, nil != value)
+		c.Expect(value.GetCmd(), gospec.Equals, "HMGET")
+		c.Expect(len(value.GetArgs()), gospec.Equals, 3)
+		c.Expect(value.GetArgs()[0], gospec.Equals, "A")
+		c.Expect(value.GetArgs()[1], gospec.Equals, "B")
+		c.Expect(value.GetArgs()[2], gospec.Equals, "C")
+	})
+
+	c.Specify("[MakeRedisBatchCommand][Hash Get] Makes command", func() {
+		value := MakeRedisBatchCommandHashGet("A", "B")
+		c.Expect(value, gospec.Satisfies, nil != value)
+		c.Expect(value.GetCmd(), gospec.Equals, "HGET")
+		c.Expect(len(value.GetArgs()), gospec.Equals, 2)
+		c.Expect(value.GetArgs()[0], gospec.Equals, "A")
+		c.Expect(value.GetArgs()[1], gospec.Equals, "B")
+	})
+
+	c.Specify("[MakeRedisBatchCommand][Hash Set] Makes command", func() {
+		value := MakeRedisBatchCommandHashSet("A", "B", []byte("Bob"))
+		c.Expect(value, gospec.Satisfies, nil != value)
+		c.Expect(value.GetCmd(), gospec.Equals, "HSET")
+		c.Expect(len(value.GetArgs()), gospec.Equals, 3)
+		c.Expect(value.GetArgs()[0], gospec.Equals, "A")
+		c.Expect(value.GetArgs()[1], gospec.Equals, "B")
+		c.Expect(value.GetArgs()[2], gospec.Equals, "Bob")
+	})
+
 	c.Specify("[MakeRedisBatchCommand][Bitop][And] Makes command", func() {
 		value := MakeRedisBatchCommandBitopAnd("DEST", "Bob", "Gary", "George")
 		c.Expect(value, gospec.Satisfies, nil != value)

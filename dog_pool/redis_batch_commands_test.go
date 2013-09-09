@@ -45,6 +45,35 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 		c.Expect(commands[0].Reply(), gospec.Satisfies, str == "PONG")
 	})
 
+	c.Specify("[RedisBatchCommands] Expire value", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
+
+		server.Connection().Cmd("SET", "Bob", "123")
+
+		var commands RedisBatchCommands
+		commands = make([]*RedisBatchCommand, 1)
+		commands[0] = MakeRedisBatchCommandExpireIn("Bob", time.Duration(1)*time.Second)
+
+		err = commands.ExecuteBatch(server.Connection())
+		c.Expect(err, gospec.Equals, nil)
+
+		ok, _ := commands[0].Reply().Int()
+		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == 1)
+
+		// Sleep for 1.5 seconds
+		time.Sleep(time.Duration(1500) * time.Millisecond)
+
+		// Value has expired!
+		reply := server.Connection().Cmd("GET", "Bob")
+		c.Expect(reply, gospec.Satisfies, reply.Type == redis.NilReply)
+	})
+
 	c.Specify("[RedisBatchCommands] Delete values", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		server, err := StartRedisServer(&logger)
@@ -148,7 +177,7 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == "OK")
 	})
 
-	c.Specify("[RedisBatchCommands] Expire value", func() {
+	c.Specify("[RedisBatchCommands] Hash Delete values", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		server, err := StartRedisServer(&logger)
 		if nil != err {
@@ -157,24 +186,100 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 		defer server.Close()
 		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
 
-		server.Connection().Cmd("SET", "Bob", "123")
+		server.Connection().Cmd("HSET", "Bob", "A", "123")
+
+		str, _ := server.Connection().Cmd("HGET", "Bob", "A").Str()
+		c.Expect(str, gospec.Equals, "123")
 
 		var commands RedisBatchCommands
 		commands = make([]*RedisBatchCommand, 1)
-		commands[0] = MakeRedisBatchCommandExpireIn("Bob", time.Duration(1)*time.Second)
+		commands[0] = MakeRedisBatchCommandHashDelete("Bob", "A")
+
+		err = commands.ExecuteBatch(server.Connection())
+		c.Expect(err, gospec.Equals, nil)
+
+		// Deleted 1 keys:
+		count, _ := commands[0].Reply().Int()
+		c.Expect(commands[0].Reply(), gospec.Satisfies, count == 1)
+	})
+
+	c.Specify("[RedisBatchCommands] Hash Mget values", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
+
+		server.Connection().Cmd("HSET", "A", "Bob", "123")
+		server.Connection().Cmd("HSET", "A", "Gary", "456")
+
+		var commands RedisBatchCommands
+		commands = make([]*RedisBatchCommand, 1)
+		commands[0] = MakeRedisBatchCommandHashMget("A", "Bob", "Gary", "George")
+
+		err = commands.ExecuteBatch(server.Connection())
+		c.Expect(err, gospec.Equals, nil)
+
+		// Cache Hit on 2x; Cache Miss on 1x
+		bytes_array, _ := commands[0].Reply().ListBytes()
+		c.Expect(commands[0].Reply(), gospec.Satisfies, len(bytes_array) == 3)
+		c.Expect(commands[0].Reply(), gospec.Satisfies, string(bytes_array[0]) == "123")
+		c.Expect(commands[0].Reply(), gospec.Satisfies, string(bytes_array[1]) == "456")
+		c.Expect(commands[0].Reply(), gospec.Satisfies, len(bytes_array[2]) == 0)
+	})
+
+	c.Specify("[RedisBatchCommands] Hash Get values", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
+
+		server.Connection().Cmd("HSET", "Bob", "A", "123")
+		server.Connection().Cmd("HSET", "Gary", "A", "456")
+
+		var commands RedisBatchCommands
+		commands = make([]*RedisBatchCommand, 3)
+		commands[0] = MakeRedisBatchCommandHashGet("Bob", "A")
+		commands[1] = MakeRedisBatchCommandHashGet("Gary", "A")
+		commands[2] = MakeRedisBatchCommandHashGet("George", "A")
+
+		err = commands.ExecuteBatch(server.Connection())
+		c.Expect(err, gospec.Equals, nil)
+
+		// Cache Hit on 2x; Cache Miss on 1x
+		str, _ := commands[0].Reply().Str()
+		c.Expect(commands[0].Reply(), gospec.Satisfies, str == "123")
+
+		str, _ = commands[1].Reply().Str()
+		c.Expect(commands[1].Reply(), gospec.Satisfies, str == "456")
+
+		str, _ = commands[2].Reply().Str()
+		c.Expect(commands[2].Reply(), gospec.Satisfies, str == "")
+	})
+
+	c.Specify("[RedisBatchCommands] Hash Set value", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
+
+		var commands RedisBatchCommands
+		commands = make([]*RedisBatchCommand, 1)
+		commands[0] = MakeRedisBatchCommandHashSet("Bob", "A", []byte("123"))
 
 		err = commands.ExecuteBatch(server.Connection())
 		c.Expect(err, gospec.Equals, nil)
 
 		ok, _ := commands[0].Reply().Int()
 		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == 1)
-
-		// Sleep for 1.5 seconds
-		time.Sleep(time.Duration(1500) * time.Millisecond)
-
-		// Value has expired!
-		reply := server.Connection().Cmd("GET", "Bob")
-		c.Expect(reply, gospec.Satisfies, reply.Type == redis.NilReply)
 	})
 
 	c.Specify("[MakeRedisBatchCommand][Bitop][And] Makes command", func() {

@@ -15,6 +15,10 @@ var cmd_mget = "MGET"
 var cmd_get = "GET"
 var cmd_del = "DEL"
 var cmd_set = "SET"
+var cmd_hmget = "HMGET"
+var cmd_hget = "HGET"
+var cmd_hdel = "HDEL"
+var cmd_hset = "HSET"
 
 //
 // Factory Methods:
@@ -23,17 +27,6 @@ var cmd_set = "SET"
 // Basic factory method
 func MakeRedisBatchCommand(cmd string) *RedisBatchCommand {
 	return &RedisBatchCommand{cmd, [][]byte{}, nil}
-}
-
-// MGET <KEY> <KEY> <KEY>...
-func MakeRedisBatchCommandMget(keys ...string) *RedisBatchCommand {
-	output := &RedisBatchCommand{
-		cmd:   cmd_mget,
-		args:  make([][]byte, len(keys))[0:0],
-		reply: nil,
-	}
-	output.WriteStringArgs(keys)
-	return output
 }
 
 // EXPIRE <KEY> <SECONDS>
@@ -45,6 +38,17 @@ func MakeRedisBatchCommandExpireIn(key string, expire_in time.Duration) *RedisBa
 	}
 	output.WriteStringArg(key)
 	output.WriteIntArg(int64(expire_in.Seconds()))
+	return output
+}
+
+// MGET <KEY> <KEY> <KEY>...
+func MakeRedisBatchCommandMget(keys ...string) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_mget,
+		args:  make([][]byte, len(keys))[0:0],
+		reply: nil,
+	}
+	output.WriteStringArgs(keys)
 	return output
 }
 
@@ -79,6 +83,55 @@ func MakeRedisBatchCommandDelete(keys ...string) *RedisBatchCommand {
 		reply: nil,
 	}
 	output.WriteStringArgs(keys)
+	return output
+}
+
+// HMGET <KEY> <FIELD> <FIELD> <FIELD>...
+func MakeRedisBatchCommandHashMget(key string, fields ...string) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_hmget,
+		args:  make([][]byte, 1+len(fields))[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
+	output.WriteStringArgs(fields)
+	return output
+}
+
+// HGET <KEY> <FIELD>
+func MakeRedisBatchCommandHashGet(key, field string) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_hget,
+		args:  make([][]byte, 2)[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
+	output.WriteStringArg(field)
+	return output
+}
+
+// HSET <KEY> <FIELD> <VALUE>
+func MakeRedisBatchCommandHashSet(key, field string, value []byte) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_hset,
+		args:  make([][]byte, 3)[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
+	output.WriteStringArg(field)
+	output.WriteArg(value)
+	return output
+}
+
+// HDEL <KEY> <KEY> <KEY> ....
+func MakeRedisBatchCommandHashDelete(key string, fields ...string) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_hdel,
+		args:  make([][]byte, 1+len(fields))[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
+	output.WriteStringArgs(fields)
 	return output
 }
 
