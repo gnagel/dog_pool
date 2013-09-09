@@ -295,7 +295,7 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[MakeRedisBatchCommand][SetBit] Makes command", func() {
-		logger := log4go.NewDefaultLogger(log4go.FINEST)
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		server, err := StartRedisServer(&logger)
 		if nil != err {
 			panic(err)
@@ -307,9 +307,7 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 		commands = make([]*RedisBatchCommand, 1)
 		commands[0] = MakeRedisBatchCommandSetBit("Bob", 123, true)
 
-		connection := &RedisConnection{Url: "127.0.0.1:6379", Id: "Bob", Logger: &logger}
-		err = commands.ExecuteBatch(connection)
-		// err = commands.ExecuteBatch(server.Connection())
+		err = commands.ExecuteBatch(server.Connection())
 		c.Expect(err, gospec.Equals, nil)
 
 		ok, _ := commands[0].Reply().Int()
