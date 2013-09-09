@@ -19,6 +19,7 @@ var cmd_hmget = "HMGET"
 var cmd_hget = "HGET"
 var cmd_hdel = "HDEL"
 var cmd_hset = "HSET"
+var cmd_hincrby = "HINCRBY"
 
 //
 // Factory Methods:
@@ -132,6 +133,19 @@ func MakeRedisBatchCommandHashDelete(key string, fields ...string) *RedisBatchCo
 	}
 	output.WriteStringArg(key)
 	output.WriteStringArgs(fields)
+	return output
+}
+
+// HDEL <KEY> <KEY> <KEY> ....
+func MakeRedisBatchCommandHashIncrementBy(key, field string, delta int64) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_hincrby,
+		args:  make([][]byte, 2)[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
+	output.WriteStringArg(field)
+	output.WriteIntArg(delta)
 	return output
 }
 

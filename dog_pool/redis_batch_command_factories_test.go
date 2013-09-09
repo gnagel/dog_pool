@@ -141,6 +141,16 @@ func RedisBatchCommandFactorySpecs(c gospec.Context) {
 		c.Expect(value.GetArgs()[2], gospec.Equals, "Bob")
 	})
 
+	c.Specify("[MakeRedisBatchCommand][Hash IncrementBy] Makes command", func() {
+		value := MakeRedisBatchCommandHashIncrementBy("A", "B", 123)
+		c.Expect(value, gospec.Satisfies, nil != value)
+		c.Expect(value.GetCmd(), gospec.Equals, "HINCRBY")
+		c.Expect(len(value.GetArgs()), gospec.Equals, 3)
+		c.Expect(value.GetArgs()[0], gospec.Equals, "A")
+		c.Expect(value.GetArgs()[1], gospec.Equals, "B")
+		c.Expect(value.GetArgs()[2], gospec.Equals, "123")
+	})
+
 	c.Specify("[MakeRedisBatchCommand][Bitop][And] Makes command", func() {
 		value := MakeRedisBatchCommandBitopAnd("DEST", "Bob", "Gary", "George")
 		c.Expect(value, gospec.Satisfies, nil != value)

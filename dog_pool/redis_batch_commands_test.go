@@ -282,6 +282,27 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == 1)
 	})
 
+	c.Specify("[RedisBatchCommands] Hash IncrementBy value", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
+
+		var commands RedisBatchCommands
+		commands = make([]*RedisBatchCommand, 1)
+		commands[0] = MakeRedisBatchCommandHashIncrementBy("Bob", "A", 123)
+
+		err = commands.ExecuteBatch(server.Connection())
+		c.Expect(err, gospec.Equals, nil)
+
+		// Returns the new hash value
+		ok, _ := commands[0].Reply().Int()
+		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == 123)
+	})
+
 	c.Specify("[MakeRedisBatchCommand][Bitop][And] Makes command", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		server, err := StartRedisServer(&logger)
