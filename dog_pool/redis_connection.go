@@ -4,7 +4,6 @@
 
 package dog_pool
 
-import "errors"
 import "fmt"
 import "strings"
 import "time"
@@ -182,40 +181,6 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 
 	// Return the reply from redis to the caller
 	return reply
-}
-
-func (p *RedisConnection) BatchCommands(commands []*RedisBatchCommand) error {
-	stop_watch := MakeStopWatchTags(p, p.Logger, []string{p.Url, p.Id, "BatchCommands"}).Start()
-
-	stop_watch_commands := make([]*StopWatch, len(commands))
-	for index, command := range commands {
-		stop_watch_commands[index] = MakeStopWatch(p, p.Logger, strings.Join([]string{"BatchCommands", "Cmd", command.Cmd}, " ")).Start()
-
-		if nil == command.Args {
-			p.Append(command.Cmd)
-		} else {
-			args := make([]interface{}, len(command.Args))
-			for i, arg := range command.Args {
-				args[i] = arg
-			}
-			p.Append(command.Cmd, args...)
-		}
-	}
-
-	for index := range commands {
-		command := commands[index]
-		command.Reply = p.GetReply()
-
-		stop_watch_commands[index].Stop().LogDurationAt(log4go.FINEST)
-
-		if p.IsClosed() {
-			return errors.New(fmt.Sprintf("[BatchCommands] Connection closed while getting reply for cmd = %v", command))
-		}
-	}
-
-	stop_watch.Stop().LogDurationAt(log4go.TRACE)
-
-	return nil
 }
 
 //

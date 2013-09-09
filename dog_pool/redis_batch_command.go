@@ -1,114 +1,132 @@
 package dog_pool
 
+import "bytes"
 import "fmt"
+import "strconv"
 import "strings"
 import "github.com/fzzy/radix/redis"
 
-const BITOP = "BITOP"
-const BIT_AND = "AND"
-const BIT_OR = "OR"
-const BIT_NOT = "NOT"
-
-const BITCOUNT = "BITCOUNT"
-
+//
+// Queued Redis Command & Reply
+//
 type RedisBatchCommand struct {
-	Cmd   string
-	Args  []string
-	Reply *redis.Reply
+	cmd   string "Command we are executing"
+	args  [][]byte
+	reply *redis.Reply
+}
+
+//
+// Redis Client Interface "proxy" methods:
+//
+
+// Cmd calls the given Redis command.
+func (p *RedisBatchCommand) RedisCmd(connection RedisClientInterface) *redis.Reply {
+	p.RedisAppend(connection)
+	p.RedisGetReply(connection)
+	return p.Reply()
+}
+
+// Append adds the given call to the pipeline queue.
+// Use GetReply() to read the reply.
+func (p *RedisBatchCommand) RedisAppend(connection RedisClientInterface) {
+	connection.Append(p.cmd, p.args)
+}
+
+// GetReply returns the reply for the next request in the pipeline queue.
+// Error reply with PipelineQueueEmptyError is returned,
+// if the pipeline queue is empty.
+func (p *RedisBatchCommand) RedisGetReply(connection RedisClientInterface) *redis.Reply {
+	p.reply = connection.GetReply()
+	return p.reply
+}
+
+//
+// Accessors:
+//
+func (p *RedisBatchCommand) GetCmd() string {
+	return string(p.cmd)
+}
+
+func (p *RedisBatchCommand) GetArgs() []string {
+	output := make([]string, len(p.args))
+	for i, arg := range p.args {
+		output[i] = string(arg)
+	}
+	return output
+}
+
+func (p *RedisBatchCommand) Reply() *redis.Reply {
+	return p.reply
 }
 
 func (p *RedisBatchCommand) String() string {
-	return fmt.Sprintf("%s %s --> %#v", p.Cmd, strings.Join(p.Args, " "), p.Reply)
+	return fmt.Sprintf("%s %s --> %#v", p.GetCmd(), strings.Join(p.GetArgs(), " "), p.reply)
 }
 
-func (p *RedisBatchCommand) AppendToArgs(args ...string) {
-	p.Args = append(p.Args, args...)
+//
+// Helpers:
+//
+func (p *RedisBatchCommand) WriteArg(arg []byte) {
+	p.args = append(p.args, arg)
 }
 
+func (p *RedisBatchCommand) WriteBoolArg(arg bool) {
+	var value string
+	switch arg {
+	case true:
+		value = "1"
+	default:
+		value = "0"
+	}
+	p.WriteArg([]byte(value))
+}
+
+func (p *RedisBatchCommand) WriteStringArg(arg string) {
+	p.WriteArg([]byte(arg))
+}
+func (p *RedisBatchCommand) WriteStringArgs(args []string) {
+	for _, arg := range args {
+		p.WriteArg([]byte(arg))
+	}
+}
+
+func (p *RedisBatchCommand) WriteIntArg(arg int64) {
+	value := strconv.FormatInt(arg, 10)
+	p.WriteArg([]byte(value))
+}
+func (p *RedisBatchCommand) WriteIntArgs(args []int64) {
+	for _, arg := range args {
+		value := strconv.FormatInt(arg, 10)
+		p.WriteArg([]byte(value))
+	}
+}
+
+func (p *RedisBatchCommand) WriteFloatArg(arg float64) {
+	value := fmt.Sprintf("%f", arg)
+	p.WriteArg([]byte(value))
+}
+func (p *RedisBatchCommand) WriteFloatArgs(args []float64) {
+	for _, arg := range args {
+		value := fmt.Sprintf("%f", arg)
+		p.WriteArg([]byte(value))
+	}
+}
+
+//
+// Is XXX operations?
+//
 func (p *RedisBatchCommand) IsBitop() bool {
-	return p.Cmd == BITOP
+	return p.cmd == cmd_bitop
 }
 
 func (p *RedisBatchCommand) IsBitopAnd() bool {
-	return p.Cmd == BITOP && len(p.Args) > 0 && p.Args[0] == BIT_AND
+	return p.IsBitop() && bytes.Equal(p.args[0], cmd_bitop_and)
 }
 
 func (p *RedisBatchCommand) IsBitopOr() bool {
-	return p.Cmd == BITOP && len(p.Args) > 0 && p.Args[0] == BIT_OR
+	return p.IsBitop() && bytes.Equal(p.args[0], cmd_bitop_or)
 }
 
 func (p *RedisBatchCommand) IsBitopNot() bool {
-	return p.Cmd == BITOP && len(p.Args) > 0 && p.Args[0] == BIT_NOT
-}
-
-func MakeBitopAnd(dest string, sources []string) *RedisBatchCommand {
-	return makeBitopCommand(BIT_AND, dest, sources)
-}
-
-func MakeBitopOr(dest string, sources []string) *RedisBatchCommand {
-	return makeBitopCommand(BIT_OR, dest, sources)
-}
-
-func MakeBitopNot(dest string, source string) *RedisBatchCommand {
-	return makeBitopCommand(BIT_NOT, dest, []string{source})
-}
-
-func MakeGetBit(key string, index int64) *RedisBatchCommand {
-	output := &RedisBatchCommand{}
-	output.Cmd = "GETBIT"
-	output.Args = []string{key, fmt.Sprintf("%d", index)}
-	return output
-}
-
-func MakeSetBit(key string, index int64, state bool) *RedisBatchCommand {
-	state_str := "1"
-	if !state {
-		state_str = "0"
-	}
-
-	output := &RedisBatchCommand{}
-	output.Cmd = "SETBIT"
-	output.Args = []string{key, fmt.Sprintf("%d", index), state_str}
-	return output
-}
-
-func MakeBitCount(key string) *RedisBatchCommand {
-	output := &RedisBatchCommand{}
-	output.Cmd = BITCOUNT
-	output.Args = []string{key}
-	return output
-}
-
-func MakeGet(key string) *RedisBatchCommand {
-	output := &RedisBatchCommand{}
-	output.Cmd = "GET"
-	output.Args = []string{key}
-	return output
-}
-
-func MakeDelete(keys []string) *RedisBatchCommand {
-	output := &RedisBatchCommand{}
-	output.Cmd = "DEL"
-	output.Args = keys
-	return output
-}
-
-func SelectBitopDestKeys(commands []*RedisBatchCommand) []string {
-	output := []string{}
-	for _, command := range commands {
-		if command.Cmd == BITOP {
-			output = append(output, command.Args[1])
-		}
-	}
-	return output
-}
-
-func makeBitopCommand(operation, dest string, sources []string) *RedisBatchCommand {
-	output := &RedisBatchCommand{}
-	output.Cmd = BITOP
-	output.Args = make([]string, 2+len(sources))
-	output.Args[0] = operation
-	output.Args[1] = dest
-	copy(output.Args[2:], sources)
-	return output
+	return p.IsBitop() && bytes.Equal(p.args[0], cmd_bitop_not)
 }

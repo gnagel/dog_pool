@@ -24,7 +24,6 @@ go get "github.com/samuel/go-thrift/thrift"
 go get "github.com/samuel/go-thrift/generator"
 go get "github.com/samuel/go-thrift/parser"
 go get "github.com/sdming/goh"
-go get -u "github.com/gnagel/dog_pool/dog_pool" # This package!
 
 
 echo ""

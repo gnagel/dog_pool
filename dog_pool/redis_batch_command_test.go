@@ -1,5 +1,8 @@
 package dog_pool
 
+import "bytes"
+import "github.com/fzzy/radix/redis"
+
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
 
@@ -16,88 +19,89 @@ func TestRedisBatchCommandSpecs(t *testing.T) {
 // Helpers
 func RedisBatchCommandSpecs(c gospec.Context) {
 
-	c.Specify("Constants", func() {
-		c.Expect(BITCOUNT, gospec.Equals, "BITCOUNT")
-		c.Expect(BITOP, gospec.Equals, "BITOP")
-		c.Expect(BIT_AND, gospec.Equals, "AND")
-		c.Expect(BIT_OR, gospec.Equals, "OR")
-		c.Expect(BIT_NOT, gospec.Equals, "NOT")
+	c.Specify("[RedisBatchCommand][GetCmd] Returns cmd value as String", func() {
+		value := MakeRedisBatchCommand("Bob")
+		c.Expect(value.cmd, gospec.Equals, "Bob")
+		c.Expect(value.GetCmd(), gospec.Equals, "Bob")
 	})
 
-	c.Specify("[MakeBitopAnd] Makes Bitop Command", func() {
-		command := MakeBitopAnd("DEST", []string{"A", "B", "C"})
-		c.Expect(command.Cmd, gospec.Equals, "BITOP")
-		c.Expect(len(command.Args), gospec.Equals, 5)
-		c.Expect(command.Args[0], gospec.Equals, "AND")
-		c.Expect(command.Args[1], gospec.Equals, "DEST")
-		c.Expect(command.Args[2], gospec.Equals, "A")
-		c.Expect(command.Args[3], gospec.Equals, "B")
-		c.Expect(command.Args[4], gospec.Equals, "C")
+	c.Specify("[RedisBatchCommand][Args] Returns cmd value as String", func() {
+		value := MakeRedisBatchCommandMget("Bob", "George", "Gary")
+		c.Expect(value.cmd, gospec.Equals, "MGET")
+		c.Expect(len(value.args), gospec.Equals, 3)
+		c.Expect(value.args[0], gospec.Satisfies, bytes.Equal(value.args[0], []byte("Bob")))
+		c.Expect(value.args[1], gospec.Satisfies, bytes.Equal(value.args[1], []byte("George")))
+		c.Expect(value.args[2], gospec.Satisfies, bytes.Equal(value.args[2], []byte("Gary")))
 
-		c.Expect(command.IsBitop(), gospec.Equals, true)
-		c.Expect(command.IsBitopAnd(), gospec.Equals, true)
-		c.Expect(command.IsBitopOr(), gospec.Equals, false)
-		c.Expect(command.IsBitopNot(), gospec.Equals, false)
+		c.Expect(len(value.GetArgs()), gospec.Equals, 3)
+		c.Expect(value.GetArgs()[0], gospec.Equals, "Bob")
+		c.Expect(value.GetArgs()[1], gospec.Equals, "George")
+		c.Expect(value.GetArgs()[2], gospec.Equals, "Gary")
 	})
 
-	c.Specify("[MakeBitopOr] Makes Bitop Command", func() {
-		command := MakeBitopOr("DEST", []string{"A", "B", "C"})
-		c.Expect(command.Cmd, gospec.Equals, "BITOP")
-		c.Expect(len(command.Args), gospec.Equals, 5)
-		c.Expect(command.Args[0], gospec.Equals, "OR")
-		c.Expect(command.Args[1], gospec.Equals, "DEST")
-		c.Expect(command.Args[2], gospec.Equals, "A")
-		c.Expect(command.Args[3], gospec.Equals, "B")
-		c.Expect(command.Args[4], gospec.Equals, "C")
+	c.Specify("[RedisBatchCommand][Reply] Returns redis.Reply pointer", func() {
+		value := MakeRedisBatchCommand("Bob")
+		value.reply = nil
+		c.Expect(value.Reply(), gospec.Satisfies, nil == value.Reply())
 
-		c.Expect(command.IsBitop(), gospec.Equals, true)
-		c.Expect(command.IsBitopAnd(), gospec.Equals, false)
-		c.Expect(command.IsBitopOr(), gospec.Equals, true)
-		c.Expect(command.IsBitopNot(), gospec.Equals, false)
+		value.reply = &redis.Reply{}
+		c.Expect(value.Reply(), gospec.Satisfies, nil != value.Reply())
+		c.Expect(value.Reply(), gospec.Equals, value.reply)
 	})
 
-	c.Specify("[MakeBitopNot] Makes Bitop Command", func() {
-		command := MakeBitopNot("DEST", "A")
-		c.Expect(command.Cmd, gospec.Equals, "BITOP")
-		c.Expect(len(command.Args), gospec.Equals, 3)
-		c.Expect(command.Args[0], gospec.Equals, "NOT")
-		c.Expect(command.Args[1], gospec.Equals, "DEST")
-		c.Expect(command.Args[2], gospec.Equals, "A")
+	c.Specify("[RedisBatchCommand][WriteArg] Appends byte slice to args", func() {
+		value := MakeRedisBatchCommand("Bob")
+		c.Expect(len(value.args), gospec.Equals, 0)
+		c.Expect(cap(value.args), gospec.Equals, 0)
 
-		c.Expect(command.IsBitop(), gospec.Equals, true)
-		c.Expect(command.IsBitopAnd(), gospec.Equals, false)
-		c.Expect(command.IsBitopOr(), gospec.Equals, false)
-		c.Expect(command.IsBitopNot(), gospec.Equals, true)
+		value.WriteArg([]byte{0xFF})
+		c.Expect(len(value.args), gospec.Equals, 1)
+		c.Expect(value.args[0], gospec.Satisfies, bytes.Equal(value.args[0], []byte{0xFF}))
 	})
 
-	c.Specify("[MakeBitCount] Makes Bitop Command", func() {
-		command := MakeBitCount("A")
-		c.Expect(command.Cmd, gospec.Equals, "BITCOUNT")
-		c.Expect(len(command.Args), gospec.Equals, 1)
-		c.Expect(command.Args[0], gospec.Equals, "A")
+	c.Specify("[RedisBatchCommand][WriteBoolArg] Appends byte slice to args", func() {
+		value := MakeRedisBatchCommand("Bob")
+		c.Expect(len(value.args), gospec.Equals, 0)
+		c.Expect(cap(value.args), gospec.Equals, 0)
 
-		c.Expect(command.IsBitop(), gospec.Equals, false)
-		c.Expect(command.IsBitopAnd(), gospec.Equals, false)
-		c.Expect(command.IsBitopOr(), gospec.Equals, false)
-		c.Expect(command.IsBitopNot(), gospec.Equals, false)
+		value.WriteBoolArg(true)
+		c.Expect(len(value.args), gospec.Equals, 1)
+		c.Expect(value.args[0], gospec.Satisfies, bytes.Equal(value.args[0], []byte("1")))
+
+		value.WriteBoolArg(false)
+		c.Expect(len(value.args), gospec.Equals, 2)
+		c.Expect(value.args[0], gospec.Satisfies, bytes.Equal(value.args[0], []byte("1")))
+		c.Expect(value.args[1], gospec.Satisfies, bytes.Equal(value.args[1], []byte("0")))
 	})
 
-	c.Specify("[SelectBitopDestKeys] Selects only the destination keys from BITOP ... commands", func() {
-		commands := []*RedisBatchCommand{}
-		commands = append(commands, MakeBitCount("A"))
-		commands = append(commands, MakeBitopNot("NOT-1", "A"))
-		commands = append(commands, MakeGet("C"))
-		commands = append(commands, MakeBitopAnd("AND-2", []string{"A", "B", "C"}))
-		commands = append(commands, MakeDelete([]string{"D"}))
-		commands = append(commands, MakeBitopOr("OR-3", []string{"A", "B", "C"}))
-		commands = append(commands, MakeBitCount("OR-3"))
+	c.Specify("[RedisBatchCommand][WriteStringArg] Appends byte slice to args", func() {
+		value := MakeRedisBatchCommand("Bob")
+		c.Expect(len(value.args), gospec.Equals, 0)
+		c.Expect(cap(value.args), gospec.Equals, 0)
 
-		keys := SelectBitopDestKeys(commands)
-		c.Expect(keys, gospec.Satisfies, nil != keys)
-		c.Expect(len(keys), gospec.Equals, 3)
-		c.Expect(keys[0], gospec.Equals, "NOT-1")
-		c.Expect(keys[1], gospec.Equals, "AND-2")
-		c.Expect(keys[2], gospec.Equals, "OR-3")
+		value.WriteStringArg("Bob")
+		c.Expect(len(value.args), gospec.Equals, 1)
+		c.Expect(value.args[0], gospec.Satisfies, bytes.Equal(value.args[0], []byte("Bob")))
+	})
+
+	c.Specify("[RedisBatchCommand][WriteIntArg] Appends byte slice to args", func() {
+		value := MakeRedisBatchCommand("Bob")
+		c.Expect(len(value.args), gospec.Equals, 0)
+		c.Expect(cap(value.args), gospec.Equals, 0)
+
+		value.WriteIntArg(123)
+		c.Expect(len(value.args), gospec.Equals, 1)
+		c.Expect(value.args[0], gospec.Satisfies, bytes.Equal(value.args[0], []byte("123")))
+	})
+
+	c.Specify("[RedisBatchCommand][WriteFloatArg] Appends byte slice to args", func() {
+		value := MakeRedisBatchCommand("Bob")
+		c.Expect(len(value.args), gospec.Equals, 0)
+		c.Expect(cap(value.args), gospec.Equals, 0)
+
+		value.WriteFloatArg(123.456)
+		c.Expect(len(value.args), gospec.Equals, 1)
+		c.Expect(string(value.args[0]), gospec.Satisfies, bytes.Equal(value.args[0], []byte("123.456000")))
 	})
 
 }

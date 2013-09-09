@@ -75,7 +75,7 @@ func StopWatchTimerLapSpecs(c gospec.Context) {
 		laps.StartStopWatch("Gary").duration = time.Duration(15) * time.Microsecond
 		laps.StartStopWatch("George").duration = time.Duration(200) * time.Microsecond
 
-		c.Expect(laps.String(), gospec.Equals, "Bob = 1500 micros, Gary = 15 micros, George = 200 micros")
+		c.Expect(laps.String(), gospec.Equals, "Lap Times [Bob = 1500, Gary = 15, George = 200] micros")
 	})
 
 	c.Specify("[CreateStopWatchTimerLaps] Creates with 'Total' timer pre-set", func() {
