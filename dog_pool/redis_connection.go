@@ -4,9 +4,12 @@
 
 package dog_pool
 
+import "bytes"
 import "fmt"
 import "strings"
 import "time"
+import "reflect"
+import "strconv"
 import "github.com/fzzy/radix/redis"
 import "github.com/alecthomas/log4go"
 
@@ -109,23 +112,17 @@ func (p *RedisConnection) Cmd(cmd string, args ...interface{}) *redis.Reply {
 // Use GetReply() to read the reply.
 //
 func (p *RedisConnection) Append(cmd string, args ...interface{}) {
-	args_to_s := func() string {
-		return fmt.Sprintf(strings.Repeat("%v ", len(args)), args...)
-	}
-
 	// Wrap in a lambda to prevent evaulation, unless logging is enabled ...
-	p.Logger.Trace(func() string {
-		args_s := args_to_s()
-		return fmt.Sprintf("[RedisConnection][Append][%s/%s] Redis Command = '%s %s'", p.Url, p.Id, cmd, args_s)
+	go p.Logger.Trace(func() string {
+		return fmt.Sprintf("[RedisConnection][Append][%s/%s] Redis Command = '%s'", p.Url, p.Id, string(formatArgs(cmd, args)))
 	})
 
 	// If the connection is not open, then open it
 	if !p.IsOpen() {
 		// Did opening the connection fail?
 		if err := p.Open(); nil != err {
-			p.Logger.Warn(func() string {
-				args_s := args_to_s()
-				return fmt.Sprintf("[RedisConnection][Append][%s/%s] Redis Command = '%s %s' --> Error = %v", p.Url, p.Id, cmd, args_s, err)
+			go p.Logger.Warn(func() string {
+				return fmt.Sprintf("[RedisConnection][Append][%s/%s] Redis Command = '%s' --> Error = %v", p.Url, p.Id, string(formatArgs(cmd, args)), err)
 			})
 			return
 		}
@@ -280,4 +277,122 @@ func (p *RedisConnection) Open() error {
 
 	// Return nil
 	return nil
+}
+
+// formatArg formats the given argument to a Redis-styled argument byte slice.
+func formatArg(v interface{}) []byte {
+	var b, bs []byte
+
+	switch vt := v.(type) {
+	case []byte:
+		bs = vt
+	case string:
+		bs = []byte(vt)
+	case bool:
+		if vt {
+			bs = []byte{'1'}
+		} else {
+			bs = []byte{'0'}
+		}
+	case nil:
+		// empty byte slice
+	case int:
+		bs = []byte(strconv.Itoa(vt))
+	case int8:
+		bs = []byte(strconv.FormatInt(int64(vt), 10))
+	case int16:
+		bs = []byte(strconv.FormatInt(int64(vt), 10))
+	case int32:
+		bs = []byte(strconv.FormatInt(int64(vt), 10))
+	case int64:
+		bs = []byte(strconv.FormatInt(vt, 10))
+	case uint:
+		bs = []byte(strconv.FormatUint(uint64(vt), 10))
+	case uint8:
+		bs = []byte(strconv.FormatUint(uint64(vt), 10))
+	case uint16:
+		bs = []byte(strconv.FormatUint(uint64(vt), 10))
+	case uint32:
+		bs = []byte(strconv.FormatUint(uint64(vt), 10))
+	case uint64:
+		bs = []byte(strconv.FormatUint(vt, 10))
+	default:
+		// Fallback to reflect-based.
+		switch reflect.TypeOf(vt).Kind() {
+		case reflect.Slice:
+			rv := reflect.ValueOf(vt)
+			for i := 0; i < rv.Len(); i++ {
+				bs = append(bs, formatArg(rv.Index(i).Interface())...)
+			}
+
+			return bs
+		case reflect.Map:
+			rv := reflect.ValueOf(vt)
+			keys := rv.MapKeys()
+			for _, k := range keys {
+				bs = append(bs, formatArg(k.Interface())...)
+				bs = append(bs, formatArg(rv.MapIndex(k).Interface())...)
+			}
+
+			return bs
+		default:
+			var buf bytes.Buffer
+
+			fmt.Fprint(&buf, v)
+			bs = buf.Bytes()
+		}
+	}
+
+	var delim []byte = []byte{' '}
+
+	// b = append(b, '$')
+	// b = append(b, []byte(strconv.Itoa(len(bs)))...)
+	// b = append(b, delim...)
+	b = append(b, bs...)
+	b = append(b, delim...)
+	return b
+}
+
+// createRequest creates a request string from the given requests.
+func formatArgs(cmd string, args ...interface{}) []byte {
+	var total []byte
+
+	var s []byte
+
+	// Calculate number of arguments.
+	argsLen := 1
+	for _, arg := range args {
+		kind := reflect.TypeOf(arg).Kind()
+		switch kind {
+		case reflect.Slice:
+			argsLen += reflect.ValueOf(arg).Len()
+		case reflect.Map:
+			argsLen += reflect.ValueOf(arg).Len() * 2
+		default:
+			argsLen++
+		}
+	}
+
+	var delim []byte = []byte{' '}
+
+	// number of arguments
+	// s = append(s, '*')
+	// s = append(s, []byte(strconv.Itoa(argsLen))...)
+	// s = append(s, delim...)
+
+	// command
+	// s = append(s, '$')
+	// s = append(s, []byte(strconv.Itoa(len(cmd)))...)
+	// s = append(s, delim...)
+	s = append(s, []byte(cmd)...)
+	s = append(s, delim...)
+
+	// arguments
+	for _, arg := range args {
+		s = append(s, formatArg(arg)...)
+	}
+
+	total = append(total, s...)
+
+	return total
 }
