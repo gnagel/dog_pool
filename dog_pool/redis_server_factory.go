@@ -71,6 +71,7 @@ func (p *RedisServerProcess) Connection() *RedisConnection {
 		p.connection = &RedisConnection{
 			Url:    fmt.Sprintf("127.0.0.1:%d", p.port),
 			Logger: p.logger,
+			Id:     "Test",
 		}
 	}
 

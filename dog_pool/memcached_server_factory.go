@@ -75,6 +75,7 @@ func (p *MemcachedServerProcess) Connection() *MemcachedConnection {
 		p.connection = &MemcachedConnection{
 			Url:    p.Url(),
 			Logger: p.logger,
+			Id:     "Test",
 		}
 	}
 
