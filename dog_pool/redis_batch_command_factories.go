@@ -10,6 +10,7 @@ var cmd_getbit = "GETBIT"
 var cmd_setbit = "SETBIT"
 var cmd_bitcount = "BITCOUNT"
 
+var cmd_exists = "EXISTS"
 var cmd_expire = "EXPIRE"
 var cmd_mget = "MGET"
 var cmd_get = "GET"
@@ -28,6 +29,17 @@ var cmd_hincrby = "HINCRBY"
 // Basic factory method
 func MakeRedisBatchCommand(cmd string) *RedisBatchCommand {
 	return &RedisBatchCommand{cmd, [][]byte{}, nil}
+}
+
+// EXISTS <KEY>
+func MakeRedisBatchCommandExists(key string) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_exists,
+		args:  make([][]byte, 1)[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
+	return output
 }
 
 // EXPIRE <KEY> <SECONDS>

@@ -56,6 +56,14 @@ func RedisBatchCommandFactorySpecs(c gospec.Context) {
 		c.Expect(value.GetCmd(), gospec.Equals, "Bob")
 	})
 
+	c.Specify("[MakeRedisBatchCommand][Exists] Makes command", func() {
+		value := MakeRedisBatchCommandExists("A")
+		c.Expect(value, gospec.Satisfies, nil != value)
+		c.Expect(value.GetCmd(), gospec.Equals, "EXISTS")
+		c.Expect(len(value.GetArgs()), gospec.Equals, 1)
+		c.Expect(value.GetArgs()[0], gospec.Equals, "A")
+	})
+
 	c.Specify("[MakeRedisBatchCommand][ExpireIn] Makes command", func() {
 		value := MakeRedisBatchCommandExpireIn("A", time.Duration(15)*time.Hour)
 		c.Expect(value, gospec.Satisfies, nil != value)
