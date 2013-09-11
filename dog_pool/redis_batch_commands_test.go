@@ -203,6 +203,32 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == "OK")
 	})
 
+	c.Specify("[RedisBatchCommands] Hash Value Exists", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
+
+		server.Connection().Cmd("HSET", "Bob", "123", "")
+
+		var commands RedisBatchCommands
+		commands = make([]*RedisBatchCommand, 2)
+		commands[0] = MakeRedisBatchCommandHashExists("Bob", "123")
+		commands[1] = MakeRedisBatchCommandHashExists("Bob", "George")
+
+		err = commands.ExecuteBatch(server.Connection())
+		c.Expect(err, gospec.Equals, nil)
+
+		ok, _ := commands[0].Reply().Int()
+		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == 1)
+
+		ok, _ = commands[1].Reply().Int()
+		c.Expect(commands[1].Reply(), gospec.Satisfies, ok == 0)
+	})
+
 	c.Specify("[RedisBatchCommands] Hash Delete values", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		server, err := StartRedisServer(&logger)

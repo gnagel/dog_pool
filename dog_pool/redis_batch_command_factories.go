@@ -16,6 +16,7 @@ var cmd_mget = "MGET"
 var cmd_get = "GET"
 var cmd_del = "DEL"
 var cmd_set = "SET"
+var cmd_hexists = "HEXISTS"
 var cmd_hmget = "HMGET"
 var cmd_hget = "HGET"
 var cmd_hdel = "HDEL"
@@ -96,6 +97,18 @@ func MakeRedisBatchCommandDelete(keys ...string) *RedisBatchCommand {
 		reply: nil,
 	}
 	output.WriteStringArgs(keys)
+	return output
+}
+
+// HEXISTS <KEY> <FIELD>
+func MakeRedisBatchCommandHashExists(key, field string) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_hexists,
+		args:  make([][]byte, 2)[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
+	output.WriteStringArg(field)
 	return output
 }
 
