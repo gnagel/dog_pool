@@ -75,6 +75,74 @@ func RedisConnectionSpecs(c gospec.Context) {
 		c.Expect(server.Connection().IsClosed(), gospec.Equals, false)
 	})
 
+	c.Specify("[RedisConnection][KeysExist] Checks if keys exists", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, server_err := StartRedisServer(&logger)
+		if nil != server_err {
+			panic(server_err)
+		}
+		defer server.Close()
+
+		keys := []string{"Key", "Bob", "George", "Alex", "Applause"}
+		for _, key := range keys {
+			server.Connection().Cmd("SET", key, "123")
+		}
+
+		oks, err := server.Connection().KeysExist(keys...)
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(len(oks), gospec.Equals, len(keys))
+		for _, ok := range oks {
+			c.Expect(ok, gospec.Equals, true)
+		}
+
+		// Cache Miss
+		server.Connection().Cmd("DEL", keys)
+		oks, err = server.Connection().KeysExist(keys...)
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(len(oks), gospec.Equals, len(keys))
+		for _, ok := range oks {
+			c.Expect(ok, gospec.Equals, false)
+		}
+	})
+
+	c.Specify("[RedisConnection][HashFieldsExist] Checks if keys exists", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, server_err := StartRedisServer(&logger)
+		if nil != server_err {
+			panic(server_err)
+		}
+		defer server.Close()
+
+		fields := []string{"Key", "Bob", "George", "Alex", "Applause"}
+		for _, field := range fields {
+			server.Connection().Cmd("HSET", "Hash Name", field, "123")
+		}
+
+		oks, err := server.Connection().HashFieldsExist("Hash Name", fields...)
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(len(oks), gospec.Equals, len(fields))
+		for _, ok := range oks {
+			c.Expect(ok, gospec.Equals, true)
+		}
+
+		// Cache Miss
+		server.Connection().Cmd("HDEL", "Hash Name", fields)
+		oks, err = server.Connection().HashFieldsExist("Hash Name", fields...)
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(len(oks), gospec.Equals, len(fields))
+		for _, ok := range oks {
+			c.Expect(ok, gospec.Equals, false)
+		}
+
+		// Cache Miss
+		oks, err = server.Connection().HashFieldsExist("Hash Missing", fields...)
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(len(oks), gospec.Equals, len(fields))
+		for _, ok := range oks {
+			c.Expect(ok, gospec.Equals, false)
+		}
+	})
+
 	c.Specify("[RedisConnection] Ping (-->Cmd-->Append+GetReply) (re-)opens the connection automatically", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		server, err := StartRedisServer(&logger)

@@ -183,6 +183,77 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 //
 //  ========================================
 //
+// RedisConnection Utils:
+//
+//  ========================================
+//
+
+func (p *RedisConnection) KeysExist(keys ...string) ([]bool, error) {
+	count := len(keys)
+
+	commands := make([]*RedisBatchCommand, count)
+	for i, key := range keys {
+		commands[i] = MakeRedisBatchCommandExists(key)
+	}
+
+	err := RedisBatchCommands(commands).ExecuteBatch(p)
+	if err != nil {
+		return nil, err
+	}
+
+	exists := make([]bool, count)
+
+	for i := range keys {
+		reply := commands[i].Reply()
+		if nil != reply.Err {
+			return nil, reply.Err
+		}
+
+		ok, err := reply.Int()
+		if err != nil {
+			return nil, err
+		}
+
+		exists[i] = ok == 1
+	}
+
+	return exists, nil
+}
+
+func (p *RedisConnection) HashFieldsExist(key string, fields ...string) ([]bool, error) {
+	count := len(fields)
+
+	commands := make([]*RedisBatchCommand, count)
+	for i, field := range fields {
+		commands[i] = MakeRedisBatchCommandHashExists(key, field)
+	}
+
+	err := RedisBatchCommands(commands).ExecuteBatch(p)
+	if err != nil {
+		return nil, err
+	}
+
+	exists := make([]bool, count)
+	for i := range fields {
+		reply := commands[i].Reply()
+		if nil != reply.Err {
+			return nil, reply.Err
+		}
+
+		ok, err := reply.Int()
+		if err != nil {
+			return nil, err
+		}
+
+		exists[i] = ok == 1
+	}
+
+	return exists, nil
+}
+
+//
+//  ========================================
+//
 // RedisConnection implementation:
 //
 //  ========================================
