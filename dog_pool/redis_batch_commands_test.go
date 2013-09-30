@@ -2,16 +2,12 @@ package dog_pool
 
 import "fmt"
 import "time"
-import "github.com/fzzy/radix/redis"
+import "github.com/RUNDSP/radix/redis"
 import "github.com/alecthomas/log4go"
 
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
 
-//
-// NOTE: Use differient ports for each test!
-//       gospec runs the specs in parallel!
-//
 func TestRedisBatchCommandsSpecs(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in benchmark mode.")

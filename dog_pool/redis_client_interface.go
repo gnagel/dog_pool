@@ -6,7 +6,7 @@
 
 package dog_pool
 
-import "github.com/fzzy/radix/redis"
+import "github.com/RUNDSP/radix/redis"
 
 type RedisClientInterface interface {
 	// Close closes the connection.

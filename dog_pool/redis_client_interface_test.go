@@ -7,7 +7,7 @@
 package dog_pool
 
 import "testing"
-import "github.com/fzzy/radix/redis"
+import "github.com/RUNDSP/radix/redis"
 import "github.com/orfjackal/gospec/src/gospec"
 
 func TestRedisClientInterfaceSpecs(t *testing.T) {

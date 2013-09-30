@@ -10,7 +10,7 @@ import "strings"
 import "time"
 import "reflect"
 import "strconv"
-import "github.com/fzzy/radix/redis"
+import "github.com/RUNDSP/radix/redis"
 import "github.com/alecthomas/log4go"
 
 //

@@ -4,10 +4,6 @@ import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
 import "github.com/alecthomas/log4go"
 
-//
-// NOTE: Use differient ports for each test!
-//       gospec runs the specs in parallel!
-//
 func TestMemcachedServerProcessSpecs(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in benchmark mode.")

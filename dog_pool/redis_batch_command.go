@@ -4,7 +4,7 @@ import "bytes"
 import "fmt"
 import "strconv"
 import "strings"
-import "github.com/fzzy/radix/redis"
+import "github.com/RUNDSP/radix/redis"
 
 //
 // Queued Redis Command & Reply
@@ -57,6 +57,82 @@ func (p *RedisBatchCommand) GetArgs() []string {
 
 func (p *RedisBatchCommand) Reply() *redis.Reply {
 	return p.reply
+}
+
+//
+// Return the bool in the Redis Reply; this assumes the redis reply is not NilReply
+//
+// Redis/Casting Error --> error
+// All other cases     --> true or false
+//
+func (p *RedisBatchCommand) ReplyToBool() (bool, error) {
+	return ReplyToBool(p.reply)
+}
+
+//
+// Return the int64 pointer in the Redis Reply
+//
+// Redis/Casting Error --> error
+// Cache Miss          --> nil ptr
+// Cache Hit           --> valid ptr
+//
+func (p *RedisBatchCommand) ReplyToInt64Ptr() (*int64, error) {
+	return ReplyToInt64Ptr(p.reply)
+}
+
+//
+// Return the int64 pointers in the Redis Reply
+//
+// Redis/Casting Error --> error
+// Cache Miss          --> nil ptr
+// Cache Hit           --> valid ptr
+//
+func (p *RedisBatchCommand) ReplyToInt64Ptrs() ([]*int64, error) {
+	return ReplyToInt64Ptrs(p.reply)
+}
+
+//
+// Return the float64 pointer in the Redis Reply
+//
+// Redis/Casting Error --> error
+// Cache Miss          --> nil ptr
+// Cache Hit           --> valid ptr
+//
+func (p *RedisBatchCommand) ReplyToFloat64Ptr() (*float64, error) {
+	return ReplyToFloat64Ptr(p.reply)
+}
+
+//
+// Return the float64 pointers in the Redis Reply
+//
+// Redis/Casting Error --> error
+// Cache Miss          --> nil ptr
+// Cache Hit           --> valid ptr
+//
+func (p *RedisBatchCommand) ReplyToFloat64Ptrs() ([]*float64, error) {
+	return ReplyToFloat64Ptrs(p.reply)
+}
+
+//
+// Return the string pointer in the Redis Reply
+//
+// Redis/Casting Error --> error
+// Cache Miss          --> nil ptr
+// Cache Hit           --> valid ptr
+//
+func (p *RedisBatchCommand) ReplyToStringPtr() (*string, error) {
+	return ReplyToStringPtr(p.reply)
+}
+
+//
+// Return the string pointers in the Redis Reply
+//
+// Redis/Casting Error --> error
+// Cache Miss          --> nil ptr
+// Cache Hit           --> valid ptr
+//
+func (p *RedisBatchCommand) ReplyToStringPtrs() ([]*string, error) {
+	return ReplyToStringPtrs(p.reply)
 }
 
 func (p *RedisBatchCommand) String() string {

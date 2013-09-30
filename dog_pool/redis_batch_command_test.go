@@ -1,7 +1,7 @@
 package dog_pool
 
 import "bytes"
-import "github.com/fzzy/radix/redis"
+import "github.com/RUNDSP/radix/redis"
 
 import "testing"
 import "github.com/orfjackal/gospec/src/gospec"
