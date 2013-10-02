@@ -72,6 +72,60 @@ func RedisDslSpecs(c gospec.Context) {
 		c.Expect(value[0], gospec.Equals, true)
 		c.Expect(value[1], gospec.Equals, false)
 	})
+
+	c.Specify("[RedisDsl][HASH_FIELD_EXISTS]", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+
+		dsl := RedisDsl{server.Connection()}
+		value, err := dsl.HASH_FIELD_EXISTS("Name", "Miss")
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(value, gospec.Equals, false)
+
+		server.Connection().Cmd("HSET", "Name", "Bob", "123")
+		value, err = dsl.HASH_FIELD_EXISTS("Name", "Bob")
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(value, gospec.Equals, true)
+
+		value, err = dsl.HASH_FIELD_EXISTS("", "")
+		c.Expect(err, gospec.Satisfies, nil != err)
+		c.Expect(value, gospec.Equals, false)
+
+		value, err = dsl.HASH_FIELD_EXISTS("Name", "")
+		c.Expect(err, gospec.Satisfies, nil != err)
+		c.Expect(value, gospec.Equals, false)
+
+		value, err = dsl.HASH_FIELD_EXISTS("", "Bob")
+		c.Expect(err, gospec.Satisfies, nil != err)
+		c.Expect(value, gospec.Equals, false)
+	})
+
+	c.Specify("[RedisDsl][HASH_FIELDS_EXIST]", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+
+		dsl := RedisDsl{server.Connection()}
+		value, err := dsl.HASH_FIELDS_EXIST("Name", "Miss")
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(len(value), gospec.Equals, 1)
+		c.Expect(value[0], gospec.Equals, false)
+
+		server.Connection().Cmd("HSET", "Name", "Bob", "123")
+		value, err = dsl.HASH_FIELDS_EXIST("Name", "Bob", "Miss")
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(len(value), gospec.Equals, 2)
+		c.Expect(value[0], gospec.Equals, true)
+		c.Expect(value[1], gospec.Equals, false)
+	})
+
 	//
 	// ==================================================
 	//
@@ -546,6 +600,142 @@ func RedisDslSpecs(c gospec.Context) {
 		c.Expect(ptrs[1], gospec.Satisfies, nil != ptrs[1])
 		c.Expect(*ptrs[0], gospec.Equals, float64(123.456))
 		c.Expect(*ptrs[1], gospec.Equals, float64(456.789))
+	})
+
+	c.Specify("[RedisDsl][GETBIT]", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+
+		dsl := RedisDsl{server.Connection()}
+
+		// Cache Miss:
+		ok, ok_err := dsl.GETBIT("Bob", 123)
+		c.Expect(ok_err, gospec.Equals, nil)
+		c.Expect(ok, gospec.Equals, false)
+
+		// Cache Hit ON:
+		server.Connection().Cmd("SETBIT", "Bob", 123, true)
+		ok, ok_err = dsl.GETBIT("Bob", 123)
+		c.Expect(ok_err, gospec.Equals, nil)
+		c.Expect(ok, gospec.Equals, true)
+
+		// Cache Hit OFF:
+		server.Connection().Cmd("SETBIT", "Bob", 123, false)
+		ok, ok_err = dsl.GETBIT("Bob", 123)
+		c.Expect(ok_err, gospec.Equals, nil)
+		c.Expect(ok, gospec.Equals, false)
+	})
+
+	c.Specify("[RedisDsl][GETBITS]", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+
+		dsl := RedisDsl{server.Connection()}
+
+		// Cache Miss:
+		oks, oks_err := dsl.GETBITS("Bob", 123, 456, 789, 999)
+		c.Expect(oks_err, gospec.Equals, nil)
+		c.Expect(len(oks), gospec.Equals, 4)
+		c.Expect(oks[0], gospec.Equals, false)
+		c.Expect(oks[1], gospec.Equals, false)
+		c.Expect(oks[2], gospec.Equals, false)
+		c.Expect(oks[3], gospec.Equals, false)
+
+		// Cache Hit ON:
+		server.Connection().Cmd("SETBIT", "Bob", 123, true)
+		server.Connection().Cmd("SETBIT", "Bob", 456, true)
+		server.Connection().Cmd("SETBIT", "Bob", 789, true)
+		server.Connection().Cmd("SETBIT", "Bob", 999, true)
+		oks, oks_err = dsl.GETBITS("Bob", 123, 456, 789, 999)
+		c.Expect(oks_err, gospec.Equals, nil)
+		c.Expect(len(oks), gospec.Equals, 4)
+		c.Expect(oks[0], gospec.Equals, true)
+		c.Expect(oks[1], gospec.Equals, true)
+		c.Expect(oks[2], gospec.Equals, true)
+		c.Expect(oks[3], gospec.Equals, true)
+
+		// Cache Hit OFF:
+		server.Connection().Cmd("SETBIT", "Bob", 123, false)
+		server.Connection().Cmd("SETBIT", "Bob", 456, false)
+		server.Connection().Cmd("SETBIT", "Bob", 789, false)
+		server.Connection().Cmd("SETBIT", "Bob", 999, false)
+		oks, oks_err = dsl.GETBITS("Bob", 123, 456, 789, 999)
+		c.Expect(oks_err, gospec.Equals, nil)
+		c.Expect(len(oks), gospec.Equals, 4)
+		c.Expect(oks[0], gospec.Equals, false)
+		c.Expect(oks[1], gospec.Equals, false)
+		c.Expect(oks[2], gospec.Equals, false)
+		c.Expect(oks[3], gospec.Equals, false)
+
+		// Cache Hit Mixed ON/OFF:
+		server.Connection().Cmd("SETBIT", "Bob", 123, true)
+		server.Connection().Cmd("SETBIT", "Bob", 456, false)
+		server.Connection().Cmd("SETBIT", "Bob", 789, false)
+		server.Connection().Cmd("SETBIT", "Bob", 999, true)
+		oks, oks_err = dsl.GETBITS("Bob", 123, 456, 789, 999)
+		c.Expect(oks_err, gospec.Equals, nil)
+		c.Expect(len(oks), gospec.Equals, 4)
+		c.Expect(oks[0], gospec.Equals, true)
+		c.Expect(oks[1], gospec.Equals, false)
+		c.Expect(oks[2], gospec.Equals, false)
+		c.Expect(oks[3], gospec.Equals, true)
+	})
+
+	c.Specify("[RedisDsl][GETBITS_TURNED_ON]", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+
+		dsl := RedisDsl{server.Connection()}
+
+		// Cache Miss:
+		indexes, indexes_err := dsl.GETBITS_TURNED_ON("Bob")
+		c.Expect(indexes_err, gospec.Equals, nil)
+		c.Expect(len(indexes), gospec.Equals, 0)
+
+		// Cache Hit ON:
+		server.Connection().Cmd("SETBIT", "Bob", 123, true)
+		server.Connection().Cmd("SETBIT", "Bob", 456, true)
+		server.Connection().Cmd("SETBIT", "Bob", 789, true)
+		server.Connection().Cmd("SETBIT", "Bob", 999, true)
+		indexes, indexes_err = dsl.GETBITS_TURNED_ON("Bob")
+		c.Expect(indexes_err, gospec.Equals, nil)
+		c.Expect(len(indexes), gospec.Equals, 4)
+		c.Expect(indexes[0], gospec.Equals, int64(123))
+		c.Expect(indexes[1], gospec.Equals, int64(456))
+		c.Expect(indexes[2], gospec.Equals, int64(789))
+		c.Expect(indexes[3], gospec.Equals, int64(999))
+
+		// Cache Hit OFF:
+		server.Connection().Cmd("SETBIT", "Bob", 123, false)
+		server.Connection().Cmd("SETBIT", "Bob", 456, false)
+		server.Connection().Cmd("SETBIT", "Bob", 789, false)
+		server.Connection().Cmd("SETBIT", "Bob", 999, false)
+		indexes, indexes_err = dsl.GETBITS_TURNED_ON("Bob")
+		c.Expect(indexes_err, gospec.Equals, nil)
+		c.Expect(len(indexes), gospec.Equals, 0)
+
+		// Cache Hit Mixed ON/OFF:
+		server.Connection().Cmd("SETBIT", "Bob", 123, true)
+		server.Connection().Cmd("SETBIT", "Bob", 456, false)
+		server.Connection().Cmd("SETBIT", "Bob", 789, false)
+		server.Connection().Cmd("SETBIT", "Bob", 999, true)
+		indexes, indexes_err = dsl.GETBITS_TURNED_ON("Bob")
+		c.Expect(indexes_err, gospec.Equals, nil)
+		c.Expect(len(indexes), gospec.Equals, 2)
+		c.Expect(indexes[0], gospec.Equals, int64(123))
+		c.Expect(indexes[1], gospec.Equals, int64(999))
 	})
 
 	//
@@ -1160,6 +1350,40 @@ func Benchmark_RedisDsl_KEYS_EXIST(b *testing.B) {
 	}
 }
 
+func Benchmark_RedisDsl_HASH_FIELD_EXISTS(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	server.Connection().Cmd("HSET", "Name", "Bob", "123")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dsl := RedisDsl{server.Connection()}
+		dsl.HASH_FIELD_EXISTS("Name", "Bob")
+	}
+}
+
+func Benchmark_RedisDsl_HASH_FIELDS_EXIST(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	server.Connection().Cmd("HSET", "Name", "Bob", "123")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dsl := RedisDsl{server.Connection()}
+		dsl.HASH_FIELDS_EXIST("Name", "Bob", "Miss")
+	}
+}
+
 //
 // ==================================================
 //
@@ -1398,6 +1622,24 @@ func Benchmark_RedisDsl_GET(b *testing.B) {
 	}
 }
 
+func Benchmark_RedisDsl_GET_x2(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	server.Connection().Cmd("SET", "Bob", "Gary")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dsl := RedisDsl{server.Connection()}
+		dsl.GET("Bob")
+		dsl.GET("Gary")
+	}
+}
+
 func Benchmark_RedisDsl_GET_STRING(b *testing.B) {
 	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 	server, err := StartRedisServer(&logger)
@@ -1522,6 +1764,85 @@ func Benchmark_RedisDsl_MGET_FLOAT64S(b *testing.B) {
 	}
 }
 
+func Benchmark_RedisDsl_GETBIT(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	server.Connection().Cmd("SETBIT", "Bob", 123, true)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dsl := RedisDsl{server.Connection()}
+		dsl.GETBIT("Bob", 123)
+	}
+}
+
+func Benchmark_RedisDsl_GETBIT_x4(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	server.Connection().Cmd("SETBIT", "Bob", 123, true)
+	server.Connection().Cmd("SETBIT", "Bob", 456, true)
+	server.Connection().Cmd("SETBIT", "Bob", 789, true)
+	server.Connection().Cmd("SETBIT", "Bob", 999, true)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dsl := RedisDsl{server.Connection()}
+		dsl.GETBIT("Bob", 123)
+		dsl.GETBIT("Bob", 456)
+		dsl.GETBIT("Bob", 789)
+		dsl.GETBIT("Bob", 999)
+	}
+}
+
+func Benchmark_RedisDsl_GETBITS(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	server.Connection().Cmd("SETBIT", "Bob", 123, true)
+	server.Connection().Cmd("SETBIT", "Bob", 456, true)
+	server.Connection().Cmd("SETBIT", "Bob", 789, true)
+	server.Connection().Cmd("SETBIT", "Bob", 999, true)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dsl := RedisDsl{server.Connection()}
+		dsl.GETBITS("Bob", 123, 456, 789, 999)
+	}
+}
+
+func Benchmark_RedisDsl_GETBITS_TURNED_ON(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	for i := 0; i < 1024; i++ {
+		server.Connection().Cmd("SETBIT", "Bob", i, i%2 == 0)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dsl := RedisDsl{server.Connection()}
+		dsl.GETBITS_TURNED_ON("Bob")
+	}
+}
+
 //
 // ==================================================
 //
@@ -1545,6 +1866,30 @@ func Benchmark_RedisDsl_HASH_GET(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		dsl := RedisDsl{server.Connection()}
 		dsl.HASH_GET("Hash Name", "Bob")
+	}
+}
+
+// Compare to Benchmark_RedisDsl_HASHES_GET
+func Benchmark_RedisDsl_HASH_GET_x4(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	server.Connection().Cmd("HSET", "Hash A", "Bob", "123")
+	server.Connection().Cmd("HSET", "Hash B", "Bob", "123")
+	server.Connection().Cmd("HSET", "Hash C", "Bob", "123")
+	server.Connection().Cmd("HSET", "Hash D", "Bob", "123")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dsl := RedisDsl{server.Connection()}
+		dsl.HASH_GET("Hash A", "Bob")
+		dsl.HASH_GET("Hash B", "Bob")
+		dsl.HASH_GET("Hash C", "Bob")
+		dsl.HASH_GET("Hash D", "Bob")
 	}
 }
 
@@ -1604,11 +1949,36 @@ func Benchmark_RedisDsl_HASH_MGET(b *testing.B) {
 	}
 	defer server.Close()
 
-	server.Connection().Cmd("HSET", "Hash Name", "Bob", "Hit Bob")
+	server.Connection().Cmd("HMSET", "Hash A", "Bob", "Hit Bob A", "Gary", "Hit Gary A", "George", "Hit George A", "Fred", "Hit Fred A")
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		dsl := RedisDsl{server.Connection()}
-		dsl.HASH_MGET("Hash Name", "Bob", "Gary")
+		dsl.HASH_MGET("Hash A", "Bob", "Gary", "George", "Fred")
+	}
+}
+
+// Compare to Benchmark_RedisDsl_HASHES_MGET
+func Benchmark_RedisDsl_HASH_MGET_x4(b *testing.B) {
+	logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+	server, err := StartRedisServer(&logger)
+	if nil != err {
+		panic(err)
+	}
+	defer server.Close()
+
+	server.Connection().Cmd("HMSET", "Hash A", "Bob", "Hit Bob A", "Gary", "Hit Gary A", "George", "Hit George A", "Fred", "Hit Fred A")
+	server.Connection().Cmd("HMSET", "Hash B", "Bob", "Hit Bob B", "Gary", "Hit Gary B", "George", "Hit George B", "Fred", "Hit Fred B")
+	server.Connection().Cmd("HMSET", "Hash C", "Bob", "Hit Bob C", "Gary", "Hit Gary C", "George", "Hit George C", "Fred", "Hit Fred C")
+	server.Connection().Cmd("HMSET", "Hash D", "Bob", "Hit Bob D", "Gary", "Hit Gary D", "George", "Hit George D", "Fred", "Hit Fred D")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dsl := RedisDsl{server.Connection()}
+		dsl.HASH_MGET("Hash A", "Bob", "Gary", "George", "Fred")
+		dsl.HASH_MGET("Hash B", "Bob", "Gary", "George", "Fred")
+		dsl.HASH_MGET("Hash C", "Bob", "Gary", "George", "Fred")
+		dsl.HASH_MGET("Hash D", "Bob", "Gary", "George", "Fred")
 	}
 }
 
@@ -1686,10 +2056,12 @@ func Benchmark_RedisDsl_HASHES_GET(b *testing.B) {
 	server.Connection().Cmd("HSET", "Hash A", "Bob", "Hit Bob A")
 	server.Connection().Cmd("HSET", "Hash B", "Bob", "Hit Bob B")
 	server.Connection().Cmd("HSET", "Hash C", "Bob", "Hit Bob C")
+	server.Connection().Cmd("HSET", "Hash D", "Bob", "Hit Bob C")
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		dsl := RedisDsl{server.Connection()}
-		dsl.HASHES_GET([]string{"Hash A", "Hash B", "Hash C"}, "Bob")
+		dsl.HASHES_GET([]string{"Hash A", "Hash B", "Hash C", "Hash D"}, "Bob")
 	}
 }
 
@@ -1761,10 +2133,11 @@ func Benchmark_RedisDsl_HASHES_MGET(b *testing.B) {
 	server.Connection().Cmd("HMSET", "Hash A", "Bob", "Hit Bob A", "Gary", "Hit Gary A", "George", "Hit George A", "Fred", "Hit Fred A")
 	server.Connection().Cmd("HMSET", "Hash B", "Bob", "Hit Bob B", "Gary", "Hit Gary B", "George", "Hit George B", "Fred", "Hit Fred B")
 	server.Connection().Cmd("HMSET", "Hash C", "Bob", "Hit Bob C", "Gary", "Hit Gary C", "George", "Hit George C", "Fred", "Hit Fred C")
+	server.Connection().Cmd("HMSET", "Hash D", "Bob", "Hit Bob D", "Gary", "Hit Gary D", "George", "Hit George D", "Fred", "Hit Fred D")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		dsl := RedisDsl{server.Connection()}
-		dsl.HASHES_MGET([]string{"Hash A", "Hash B", "Hash C"}, "Bob", "Gary", "George", "Fred")
+		dsl.HASHES_MGET([]string{"Hash A", "Hash B", "Hash C", "Hash D"}, "Bob", "Gary", "George", "Fred")
 	}
 }
 

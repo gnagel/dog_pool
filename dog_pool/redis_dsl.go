@@ -46,6 +46,43 @@ func (p RedisDsl) KEYS_EXIST(keys ...string) ([]bool, error) {
 	return output, nil
 }
 
+// Does the Key Exist?
+func (p RedisDsl) HASH_FIELD_EXISTS(key, field string) (bool, error) {
+	if len(key) == 0 {
+		return false, fmt.Errorf("Empty key")
+	}
+	if len(field) == 0 {
+		return false, fmt.Errorf("Empty field")
+	}
+
+	return ReplyToBool(p.Cmd("HEXISTS", key, field))
+}
+
+// Do the Keys Exist?
+func (p RedisDsl) HASH_FIELDS_EXIST(key string, fields ...string) ([]bool, error) {
+	if len(key) == 0 {
+		return nil, fmt.Errorf("Empty key")
+	}
+	for i, field := range fields {
+		if len(field) == 0 {
+			return nil, fmt.Errorf("Empty field[%d]", i)
+		}
+		p.Append("HEXISTS", key, field)
+	}
+
+	output := make([]bool, len(fields))
+	for i := range fields {
+		b, err := ReplyToBool(p.GetReply())
+		if nil != err {
+			return nil, err
+		}
+
+		output[i] = b
+	}
+
+	return output, nil
+}
+
 //
 // ==================================================
 //
@@ -187,6 +224,59 @@ func (p RedisDsl) HASHES_GETALL(keys []string) []*redis.Reply {
 	}
 
 	return output
+}
+
+// Get the key's bit state
+func (p RedisDsl) GETBIT(key string, position int64) (bool, error) {
+	if len(key) == 0 {
+		return false, fmt.Errorf("Empty key")
+	}
+
+	return ReplyToBool(p.Cmd("GETBIT", key, position))
+}
+
+// Get the key's bit state
+func (p RedisDsl) GETBITS(key string, positions ...int64) ([]bool, error) {
+	if len(key) == 0 {
+		return nil, fmt.Errorf("Empty key")
+	}
+
+	for i, position := range positions {
+		if position < 0 {
+			return nil, fmt.Errorf("Empty negative bit position[%d]=%d", i, position)
+		}
+
+		p.Append("GETBIT", key, position)
+	}
+
+	output := make([]bool, len(positions))
+	for i := range positions {
+		b, err := ReplyToBool(p.GetReply())
+		if nil != err {
+			return nil, err
+		}
+
+		output[i] = b
+	}
+
+	return output, nil
+}
+
+// Decode the key's bit states
+func (p RedisDsl) GETBITS_TURNED_ON(key string) ([]int64, error) {
+	reply := p.GET(key)
+	switch {
+	case nil != reply.Err:
+		return nil, reply.Err
+	case redis.NilReply == reply.Type:
+		return []int64{}, nil
+	default:
+		as_bytes, err := reply.Bytes()
+		if nil != err {
+			return nil, err
+		}
+		return MapBitmapToIndices(as_bytes), nil
+	}
 }
 
 //
