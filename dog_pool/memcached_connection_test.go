@@ -106,6 +106,22 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 		c.Expect(string(item_output.Value), gospec.Equals, string(item_input.Value))
 	})
 
+	c.Specify("[MemcachedConnection][SetStr+GetStr] Returns Value", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartMemcachedServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+
+		c.Expect(server.Connection().SetStr("BOB", "Hello", 0), gospec.Equals, nil)
+
+		ptr, err := server.Connection().GetStr("BOB")
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(ptr, gospec.Satisfies, nil != ptr)
+		c.Expect(*ptr, gospec.Equals, "Hello")
+	})
+
 }
 
 func Benchmark_MemcachedConnection_Get(b *testing.B) {

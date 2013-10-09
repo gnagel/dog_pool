@@ -380,6 +380,30 @@ func (p *MemcachedConnection) Decrement(key string, delta uint64) (newValue uint
 //  ========================================
 //
 
+// Set a string
+func (p *MemcachedConnection) SetStr(key, value string, expiration int32) error {
+	item := &memcached.Item{
+		Key:        key,
+		Value:      bytes.NewBufferString(value).Bytes(),
+		Expiration: expiration,
+	}
+	return p.Set(item)
+}
+
+// Get a string
+func (p *MemcachedConnection) GetStr(key string) (*string, error) {
+	item, err := p.Get(key)
+	switch err {
+	case nil:
+		str := string(item.Value)
+		return &str, nil
+	case memcached.ErrCacheMiss:
+		return nil, nil
+	default:
+		return nil, err
+	}
+}
+
 //
 // Ping the server, opening the client connection if necessary
 // Returns:
