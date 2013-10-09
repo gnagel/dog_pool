@@ -126,6 +126,28 @@ func RedisDslSpecs(c gospec.Context) {
 		c.Expect(value[1], gospec.Equals, false)
 	})
 
+	c.Specify("[RedisDsl][HASHES_FIELD_EXISTS]", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+
+		dsl := RedisDsl{server.Connection()}
+		value, err := dsl.HASHES_FIELD_EXISTS([]string{"Name"}, "Miss")
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(len(value), gospec.Equals, 1)
+		c.Expect(value[0], gospec.Equals, false)
+
+		server.Connection().Cmd("HSET", "Name", "Bob", "123")
+		value, err = dsl.HASHES_FIELD_EXISTS([]string{"Name", "Miss"}, "Bob")
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(len(value), gospec.Equals, 2)
+		c.Expect(value[0], gospec.Equals, true)
+		c.Expect(value[1], gospec.Equals, false)
+	})
+
 	//
 	// ==================================================
 	//

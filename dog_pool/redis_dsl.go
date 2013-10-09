@@ -83,6 +83,31 @@ func (p RedisDsl) HASH_FIELDS_EXIST(key string, fields ...string) ([]bool, error
 	return output, nil
 }
 
+// Does the Key Exist?
+func (p RedisDsl) HASHES_FIELD_EXISTS(keys []string, field string) ([]bool, error) {
+	if len(field) == 0 {
+		return nil, fmt.Errorf("Empty field")
+	}
+	for i, key := range keys {
+		if len(field) == 0 {
+			return nil, fmt.Errorf("Empty key[%d]", i)
+		}
+		p.Append("HEXISTS", key, field)
+	}
+
+	output := make([]bool, len(keys))
+	for i := range keys {
+		b, err := ReplyToBool(p.GetReply())
+		if nil != err {
+			return nil, err
+		}
+
+		output[i] = b
+	}
+
+	return output, nil
+}
+
 //
 // ==================================================
 //
