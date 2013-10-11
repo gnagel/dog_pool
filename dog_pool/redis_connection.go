@@ -28,6 +28,10 @@ type RedisConnection struct {
 	client *redis.Client "Connection to a Redis, may be nil"
 }
 
+func (p *RedisConnection) String() string {
+	return fmt.Sprintf("RedisConnection { Id=%v, Url=%v, Timeout=%v }", p.Id, p.Url, p.Timeout)
+}
+
 //
 // Lazily make a Redis Connection
 //

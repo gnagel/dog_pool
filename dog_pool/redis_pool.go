@@ -21,6 +21,10 @@ type RedisConnectionPool struct {
 	myPool  *ConnectionPoolWrapper "Connection Pool wrapper"
 }
 
+func (p *RedisConnectionPool) String() string {
+	return fmt.Sprintf("RedisConnectionPool { Size=%v, Urls=%v, Timeout=%v }", p.Size, p.Urls, p.Timeout)
+}
+
 //
 // Is the pool open?
 //
@@ -134,10 +138,12 @@ func (p *RedisConnectionPool) Pop() (*RedisConnection, error) {
 
 	// Return the connection
 	if c != nil {
+		p.Logger.Finest("Removed connection %v", c)
 		return c.(*RedisConnection), nil
 	}
 
 	// Return an error when all connections are exhausted
+	p.Logger.Critical("[RedisConnectionPool][Pop] No connections available pool=%v", p.String())
 	return nil, ErrNoConnectionsAvailable
 }
 
@@ -145,5 +151,6 @@ func (p *RedisConnectionPool) Pop() (*RedisConnection, error) {
 // Return a RedisConnection
 //
 func (p *RedisConnectionPool) Push(c *RedisConnection) {
+	p.Logger.Finest("Returned connection %v", c)
 	p.myPool.ReleaseConnection(c)
 }
