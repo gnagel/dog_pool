@@ -76,6 +76,36 @@ func MemcachedConnectionSpecs(c gospec.Context) {
 		c.Expect(server.Connection().IsOpen(), gospec.Equals, true)
 	})
 
+	c.Specify("[MemcachedConnection] Clone+Ping (-->Set-->Delete) (re-)opens the connection automatically", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartMemcachedServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+
+		// Starts off closed ...
+		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
+
+		// Ping the server
+		// Should now be open
+		c.Expect(server.Connection().Ping(), gospec.Equals, nil)
+		c.Expect(server.Connection().IsOpen(), gospec.Equals, true)
+
+		// Clone the connection
+		clone := server.Connection().Clone()
+		defer clone.Close()
+
+		// Close the connection
+		c.Expect(err, gospec.Equals, nil)
+		c.Expect(clone.IsClosed(), gospec.Equals, true)
+
+		// Ping the server again
+		// Should now be open again
+		c.Expect(clone.Ping(), gospec.Equals, nil)
+		c.Expect(clone.IsOpen(), gospec.Equals, true)
+	})
+
 	c.Specify("[MemcachedConnection][Get] Returns Cache Miss", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		server, err := StartMemcachedServer(&logger)
