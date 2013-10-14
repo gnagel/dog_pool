@@ -380,6 +380,17 @@ func (p *MemcachedConnection) Decrement(key string, delta uint64) (newValue uint
 //  ========================================
 //
 
+// Create a new (un-opened) copy of this MemcachedConnection
+func (p *MemcachedConnection) Clone() *MemcachedConnection {
+	return &MemcachedConnection{
+		Url:     p.Url,
+		Id:      p.Id,
+		Logger:  p.Logger,
+		Timeout: p.Timeout,
+		client:  nil,
+	}
+}
+
 // Set a string
 func (p *MemcachedConnection) SetStr(key, value string, expiration int32) error {
 	item := &memcached.Item{
