@@ -37,6 +37,7 @@ func RedisBatchCommandSpecs(c gospec.Context) {
 		c.Expect(value.GetArgs()[0], gospec.Equals, "Bob")
 		c.Expect(value.GetArgs()[1], gospec.Equals, "George")
 		c.Expect(value.GetArgs()[2], gospec.Equals, "Gary")
+		c.Expect(value.String(), gospec.Equals, "RedisBatchCommand { Cmd=[MGET], Args.Length=[3], Arg[0]=[Bob], Arg[1]=[George], Arg[2]=[Gary], Reply=[(*redis.Reply)(nil)] }")
 	})
 
 	c.Specify("[RedisBatchCommand][Reply] Returns redis.Reply pointer", func() {

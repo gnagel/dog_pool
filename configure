@@ -1,0 +1,36 @@
+#!/bin/sh
+
+export GOPATH=$PWD/
+export GOMAXPROCS=1
+
+
+# Abort on errors after this point ...
+set -e
+
+if [ "darwin12" = $OSTYPE ]; then
+  git config --global credential.helper osxkeychain
+else
+  git config --global credential.helper store
+fi
+
+# Makesure whitespace is cleanedup:
+git config --global core.whitespace "trailing-space,space-before-tab"
+git config --global apply.whitespace "fix"
+
+echo ""
+echo ".................................................................."
+echo "Installing dependencies .........................................."
+echo ".................................................................."
+echo ""
+
+go get -u "github.com/bradfitz/gomemcache/memcache"
+go get -u "github.com/fzzy/radix/redis"
+go get -u "github.com/RUNDSP/radix/redis"
+go get -u "github.com/alecthomas/log4go"
+go get -u "github.com/orfjackal/gospec/src/gospec"
+
+echo ""
+echo ".................................................................."
+echo "Installed dependencies ..........................................."
+echo ".................................................................."
+echo ""

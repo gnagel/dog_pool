@@ -3,31 +3,8 @@
 export GOPATH=$PWD/
 export GOMAXPROCS=1
 
-
-# Abort on errors after this point ...
-set -e
-
-
-echo ""
-echo ".................................................................."
-echo "Installing dependencies .........................................."
-echo ".................................................................."
-echo ""
-
-go get -u "github.com/bradfitz/gomemcache/memcache"
-go get -u "github.com/fzzy/radix/redis"
-go get -u "github.com/RUNDSP/radix/redis"
-go get -u "github.com/alecthomas/log4go"
-go get -u "github.com/orfjackal/gospec/src/gospec"
-
-
-echo ""
-echo ".................................................................."
-echo "Formatting the code .............................................."
-echo ".................................................................."
-gofmt -s -w $GOPATH/dog_pool
-echo ""
-
+. ./configure
+. ./format
 
 echo ""
 echo ".................................................................."
