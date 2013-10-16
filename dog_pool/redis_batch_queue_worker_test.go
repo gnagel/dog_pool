@@ -126,10 +126,149 @@ func RedisBatchQueueWorkerSpecs(c gospec.Context) {
 		fmt.Println("Queue sizes:", len(queue), len(counter))
 	})
 
-	c.Specify("[RedisBatchQueueWorker][mayPopCommand]", func() {})
+	c.Specify("[RedisBatchQueueWorker][mayPopCommand]", func() {
+		prev := runtime.GOMAXPROCS(2)
+		defer runtime.GOMAXPROCS(prev)
 
-	c.Specify("[RedisBatchQueueWorker][popCommands]", func() {})
+		logger := &log4go.Logger{}
+		connection := &RedisConnection{}
+		batch_size := uint(1)
+		queue := make(chan *RedisBatchCommand, 2)
+		defer close(queue)
 
-	c.Specify("[RedisBatchQueueWorker][Run]", func() {})
+		ptr, err := makeRedisBatchQueueWorker(logger, connection, batch_size, queue)
+		c.Expect(err, gospec.Satisfies, nil == err)
+		c.Expect(ptr, gospec.Satisfies, nil != ptr)
+
+		cmd, ok := ptr.mayPopCommand()
+		c.Expect(cmd, gospec.Satisfies, nil == cmd)
+		c.Expect(ok, gospec.Equals, true)
+		c.Expect(len(queue), gospec.Equals, 0)
+
+		queue <- &RedisBatchCommand{}
+		c.Expect(len(queue), gospec.Equals, 1)
+
+		cmd, ok = ptr.mayPopCommand()
+		c.Expect(cmd, gospec.Satisfies, nil != cmd)
+		c.Expect(ok, gospec.Equals, true)
+		c.Expect(len(queue), gospec.Equals, 0)
+	})
+
+	c.Specify("[RedisBatchQueueWorker][popCommands]", func() {
+		prev := runtime.GOMAXPROCS(2)
+		defer runtime.GOMAXPROCS(prev)
+
+		logger := &log4go.Logger{}
+		connection := &RedisConnection{}
+		batch_size := uint(10)
+		queue := make(chan *RedisBatchCommand, int(batch_size*3))
+		defer close(queue)
+
+		ptr, err := makeRedisBatchQueueWorker(logger, connection, batch_size, queue)
+		c.Expect(err, gospec.Satisfies, nil == err)
+		c.Expect(ptr, gospec.Satisfies, nil != ptr)
+
+		counter := make(chan int, 2)
+		defer close(counter)
+
+		// Pop the commands
+		pop := func() {
+			cmds, _ := ptr.popCommands()
+			counter <- len(cmds)
+		}
+
+		c.Expect(len(queue), gospec.Equals, 0)
+		c.Expect(len(counter), gospec.Equals, 0)
+
+		queue <- &RedisBatchCommand{}
+		c.Expect(len(queue), gospec.Equals, 1)
+		c.Expect(len(counter), gospec.Equals, 0)
+
+		go pop()
+		time.Sleep(time.Millisecond)
+		c.Expect(len(queue), gospec.Equals, 0)
+		c.Expect(len(counter), gospec.Equals, 1)
+
+		count, ok := <-counter
+		c.Expect(count, gospec.Equals, 1)
+		c.Expect(ok, gospec.Equals, true)
+
+		for i := 0; i < 15; i++ {
+			queue <- &RedisBatchCommand{}
+		}
+		c.Expect(len(queue), gospec.Equals, 15)
+		c.Expect(len(counter), gospec.Equals, 0)
+
+		// Pops 1x batch_size commands
+		go pop()
+		time.Sleep(time.Millisecond)
+		c.Expect(len(queue), gospec.Equals, 5)
+		c.Expect(len(counter), gospec.Equals, 1)
+
+		// Counts the correct number of commands
+		count, ok = <-counter
+		c.Expect(count, gospec.Equals, 10)
+		c.Expect(ok, gospec.Equals, true)
+
+		// Pops 1/2x batch_size commands
+		go pop()
+		time.Sleep(time.Millisecond)
+		c.Expect(len(queue), gospec.Equals, 0)
+		c.Expect(len(counter), gospec.Equals, 1)
+
+		// Pop a partial batch:
+		count, ok = <-counter
+		c.Expect(count, gospec.Equals, 5)
+		c.Expect(ok, gospec.Equals, true)
+	})
+
+	c.Specify("[RedisBatchQueueWorker][Run]", func() {
+		prev := runtime.GOMAXPROCS(2)
+		defer runtime.GOMAXPROCS(prev)
+
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+
+		batch_size := uint(10)
+		queue := make(chan *RedisBatchCommand, int(batch_size*3))
+		// defer close(queue)
+
+		ptr, err := makeRedisBatchQueueWorker(&logger, server.Connection(), batch_size, queue)
+		c.Expect(err, gospec.Satisfies, nil == err)
+		c.Expect(ptr, gospec.Satisfies, nil != ptr)
+
+		// Runs the task until the queue is closed
+		go ptr.Run()
+
+		queue <- MakeRedisBatchCommandHashIncrementBy("Hash", "Field A", 1)
+		queue <- MakeRedisBatchCommandHashIncrementBy("Hash", "Field B", 10)
+		queue <- MakeRedisBatchCommandHashIncrementBy("Hash", "Field C", 100)
+
+		time.Sleep(50 * time.Millisecond)
+
+		ints, ints_err := RedisDsl{server.Connection()}.HASH_MGET_INT64S("Hash", "Field A", "Field B", "Field C")
+		c.Expect(ints_err, gospec.Equals, nil)
+		c.Expect(len(ints), gospec.Equals, 3)
+		c.Expect(*ints[0], gospec.Equals, int64(1))
+		c.Expect(*ints[1], gospec.Equals, int64(10))
+		c.Expect(*ints[2], gospec.Equals, int64(100))
+
+		queue <- MakeRedisBatchCommandHashDelete("Hash", "Field A", "Field B", "Field C")
+		time.Sleep(time.Millisecond)
+		close(queue)
+
+		time.Sleep(50 * time.Millisecond)
+
+		ints, ints_err = RedisDsl{server.Connection()}.HASH_MGET_INT64S("Hash", "Field A", "Field B", "Field C")
+		c.Expect(ints_err, gospec.Equals, nil)
+		c.Expect(len(ints), gospec.Equals, 3)
+		c.Expect(ints[0], gospec.Satisfies, nil == ints[0])
+		c.Expect(ints[1], gospec.Satisfies, nil == ints[1])
+		c.Expect(ints[2], gospec.Satisfies, nil == ints[2])
+	})
 
 }
