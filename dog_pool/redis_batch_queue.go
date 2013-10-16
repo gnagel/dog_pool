@@ -1,6 +1,7 @@
 package dog_pool
 
 import "fmt"
+import "time"
 import "github.com/alecthomas/log4go"
 
 type RedisBatchQueue struct {
@@ -59,7 +60,7 @@ func (p *RedisBatchQueue) Open() error {
 
 	p.workers = make([]*redisBatchQueueWorker, p.WorkersSize)
 	for i := range p.workers {
-		ptr, err := makeRedisBatchQueueWorker(p.Logger, p.Connection, p.WorkersBatchSize, p.queue)
+		ptr, err := makeRedisBatchQueueWorker(p.Logger, p.Connection.Clone(), p.WorkersBatchSize, p.queue)
 		if nil != err {
 			// Close the queue and cleanup the pointers
 			p.Close()
@@ -84,9 +85,26 @@ func (p *RedisBatchQueue) Close() error {
 	if nil != p.queue {
 		close(p.queue)
 	}
-
-	// Cleanup the pointers
 	p.queue = nil
+
+	for _, worker := range p.workers {
+		if nil == worker {
+			continue
+		}
+		if nil == worker.Connection {
+			continue
+		}
+		if nil == worker.Connection.client {
+			continue
+		}
+
+		// Let any pending tasks complete before closing the Redis Connection,
+		// This will prevent some unsavory crashes in background go routines.
+		time.Sleep(time.Millisecond * 15)
+
+		worker.Connection.Close()
+	}
+
 	p.workers = nil
 
 	return nil
