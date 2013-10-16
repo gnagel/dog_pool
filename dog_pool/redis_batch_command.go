@@ -15,6 +15,17 @@ type RedisBatchCommand struct {
 	reply *redis.Reply
 }
 
+func (p *RedisBatchCommand) String() string {
+	lines := make([]string, 3+len(p.args))[0:0]
+	lines = append(lines, fmt.Sprintf("Cmd=[%v]", p.cmd))
+	lines = append(lines, fmt.Sprintf("Args.Length=[%v]", len(p.args)))
+	for i, arg := range p.args {
+		lines = append(lines, fmt.Sprintf("Arg[%v]=[%v]", i, string(arg)))
+	}
+	lines = append(lines, fmt.Sprintf("Reply=[%#v]", p.reply))
+	return fmt.Sprintf("RedisBatchCommand { %v }", strings.Join(lines, ", "))
+}
+
 //
 // Redis Client Interface "proxy" methods:
 //
@@ -133,10 +144,6 @@ func (p *RedisBatchCommand) ReplyToStringPtr() (*string, error) {
 //
 func (p *RedisBatchCommand) ReplyToStringPtrs() ([]*string, error) {
 	return ReplyToStringPtrs(p.reply)
-}
-
-func (p *RedisBatchCommand) String() string {
-	return fmt.Sprintf("%s %s --> %#v", p.GetCmd(), strings.Join(p.GetArgs(), " "), p.reply)
 }
 
 //
