@@ -33,12 +33,14 @@ func (p *RedisBatchQueue) Len() int {
 
 // Format as a string
 func (p *RedisBatchQueue) String() string {
-	return fmt.Sprintf("RedisBatchQueue { Connection=%v, QueueSize=%v, WorkersSize=%v, WorkersBatchSize=%v, Queue.Cap=%v, Queue.Len=%v }", p.Connection, p.QueueSize, p.WorkersSize, p.WorkersBatchSize, p.Cap(), p.Len)
+	return fmt.Sprintf("RedisBatchQueue { Connection=%v, QueueSize=%v, WorkersSize=%v, WorkersBatchSize=%v, Queue.Cap=%v, Queue.Len=%v }", p.Connection, p.QueueSize, p.WorkersSize, p.WorkersBatchSize, p.Cap(), p.Len())
 }
 
 // Open the queue
 func (p *RedisBatchQueue) Open() error {
 	switch {
+	case nil == p.Logger:
+		return fmt.Errorf("[RedisBatchQueue][Open] Nil Logger!")
 	case nil != p.queue:
 		return fmt.Errorf("[RedisBatchQueue][Open] Queue is already open!")
 	case nil == p.Connection:
@@ -91,13 +93,17 @@ func (p *RedisBatchQueue) Close() error {
 }
 
 // Push the command(s) onto the queue
-func (p *RedisBatchQueue) Push(cmds ...*RedisBatchCommand) error {
+func (p *RedisBatchQueue) RunAsync(cmds ...*RedisBatchCommand) error {
 	if nil == p.queue {
-		return fmt.Errorf("[RedisBatchQueue][Push] Queue is closed!")
+		return fmt.Errorf("[RedisBatchQueue][RunAsync] Queue is closed!")
 	}
 
-	for _, cmd := range cmds {
-		p.queue <- cmd
+	for i, cmd := range cmds {
+		if nil != cmd {
+			p.queue <- cmd
+		} else {
+			return fmt.Errorf("[RedisBatchQueue][RunAsync][%v] Nil RedisBatchCommand!", i)
+		}
 	}
 	return nil
 }
