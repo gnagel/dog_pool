@@ -12,6 +12,7 @@ var cmd_bitcount = "BITCOUNT"
 
 var cmd_exists = "EXISTS"
 var cmd_expire = "EXPIRE"
+var cmd_ttl = "TTL"
 var cmd_mget = "MGET"
 var cmd_get = "GET"
 var cmd_del = "DEL"
@@ -52,6 +53,17 @@ func MakeRedisBatchCommandExpireIn(key string, expire_in time.Duration) *RedisBa
 	}
 	output.WriteStringArg(key)
 	output.WriteIntArg(int64(expire_in.Seconds()))
+	return output
+}
+
+// EXPIRE <KEY> <SECONDS>
+func MakeRedisBatchCommandGetExpiresIn(key string) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_ttl,
+		args:  make([][]byte, 1)[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
 	return output
 }
 

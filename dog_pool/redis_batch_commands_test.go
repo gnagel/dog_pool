@@ -76,17 +76,41 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 		defer server.Close()
 		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
 
-		server.Connection().Cmd("SET", "Bob", "123")
-
-		var commands RedisBatchCommands
-		commands = make([]*RedisBatchCommand, 1)
-		commands[0] = MakeRedisBatchCommandExpireIn("Bob", time.Duration(1)*time.Second)
+		commands := RedisBatchCommands{
+			// Expects -2
+			MakeRedisBatchCommandGetExpiresIn("Bob"),
+			// Expects OK
+			MakeRedisBatchCommandSet("Bob", []byte("123")),
+			// Expects -1
+			MakeRedisBatchCommandGetExpiresIn("Bob"),
+			// Expects OK
+			MakeRedisBatchCommandExpireIn("Bob", time.Duration(1)*time.Second),
+			// Expects ~1s
+			MakeRedisBatchCommandGetExpiresIn("Bob"),
+		}
 
 		err = commands.ExecuteBatch(server.Connection())
 		c.Expect(err, gospec.Equals, nil)
 
-		ok, _ := commands[0].Reply().Int()
-		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == 1)
+		// Expects -2, or -1 for older redis's
+		ttl, _ := commands[0].Reply().Int()
+		c.Expect(commands[0].Reply(), gospec.Satisfies, ttl == -2 || ttl == -1)
+
+		// Expects OK
+		ok, _ := commands[1].Reply().Bool()
+		c.Expect(commands[1].Reply(), gospec.Satisfies, ok)
+
+		// Expects -1
+		ttl, _ = commands[2].Reply().Int()
+		c.Expect(commands[2].Reply(), gospec.Satisfies, ttl == -1)
+
+		// Expects OK
+		ok, _ = commands[3].Reply().Bool()
+		c.Expect(commands[3].Reply(), gospec.Satisfies, ok)
+
+		// Expects ~1s
+		ttl, _ = commands[4].Reply().Int()
+		c.Expect(commands[4].Reply(), gospec.Satisfies, ttl == 1)
 
 		// Sleep for 1.5 seconds
 		time.Sleep(time.Duration(1500) * time.Millisecond)
