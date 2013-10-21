@@ -26,6 +26,8 @@ type RedisConnection struct {
 	Timeout time.Duration "Connection Timeout"
 
 	client *redis.Client "Connection to a Redis, may be nil"
+
+	cmd_queue []string
 }
 
 func (p *RedisConnection) String() string {
@@ -116,18 +118,17 @@ func (p *RedisConnection) Cmd(cmd string, args ...interface{}) *redis.Reply {
 // Use GetReply() to read the reply.
 //
 func (p *RedisConnection) Append(cmd string, args ...interface{}) {
+	last_cmd := string(formatArgs(cmd, args))
+	p.cmd_queue = append(p.cmd_queue, last_cmd)
+
 	// Wrap in a lambda to prevent evaulation, unless logging is enabled ...
-	go p.Logger.Trace(func() string {
-		return fmt.Sprintf("[RedisConnection][Append][%s/%s] Redis Command = '%s'", p.Url, p.Id, string(formatArgs(cmd, args)))
-	})
+	p.Logger.Trace("[RedisConnection][Append][%s/%s] Redis Command = '%s'", p.Url, p.Id, last_cmd)
 
 	// If the connection is not open, then open it
 	if !p.IsOpen() {
 		// Did opening the connection fail?
 		if err := p.Open(); nil != err {
-			go p.Logger.Warn(func() string {
-				return fmt.Sprintf("[RedisConnection][Append][%s/%s] Redis Command = '%s' --> Error = %v", p.Url, p.Id, string(formatArgs(cmd, args)), err)
-			})
+			p.Logger.Warn("[RedisConnection][Append][%s/%s] Redis Command = '%s' --> Error = %v", p.Url, p.Id, last_cmd, err)
 			return
 		}
 	}
@@ -154,6 +155,16 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 	reply := p.client.GetReply()
 	stop_watch.Stop().LogDurationAt(log4go.FINEST)
 
+	var first_cmd string
+	switch {
+	case 1 == len(p.cmd_queue):
+		first_cmd = p.cmd_queue[0]
+		p.cmd_queue = nil
+	case 1 < len(p.cmd_queue):
+		first_cmd = p.cmd_queue[0]
+		p.cmd_queue = p.cmd_queue[1:]
+	}
+
 	// If the connection
 	if reply.Type == redis.ErrorReply {
 		//* Common errors
@@ -166,18 +177,18 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 			fallthrough
 		case redis.PipelineQueueEmptyError.Error():
 			// Log the error & break
-			p.Logger.Warn("[RedisConnection][GetReply][%s/%s] Ignored Error from Redis, Error = %v", p.Url, p.Id, reply.Err)
+			p.Logger.Warn("[RedisConnection][GetReply][%s/%s] Ignored Error from Redis, cmd=%v, Error = %v", p.Url, p.Id, first_cmd, reply.Err)
 			break
 
 		default:
 			// All other errors are fatal!
 			// Close the connection and log the error
-			p.Logger.Error("[RedisConnection][GetReply][%s/%s] Fatal Error from Redis, Error = %v", p.Url, p.Id, reply.Err)
+			p.Logger.Error("[RedisConnection][GetReply][%s/%s] Fatal Error from Redis, cmd=%v, Error = %v", p.Url, p.Id, first_cmd, reply.Err)
 			p.Close()
 		}
 	} else {
 		// Log the response
-		p.Logger.Trace("[RedisConnection][GetReply][%s/%s] Redis Reply Type = %d, Value = %v", p.Url, p.Id, reply.Type, reply.String())
+		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply, Cmd=%v, Reply=%#v", p.Url, p.Id, first_cmd, reply)
 	}
 
 	// Return the reply from redis to the caller
