@@ -24,6 +24,8 @@ var cmd_hget = "HGET"
 var cmd_hdel = "HDEL"
 var cmd_hset = "HSET"
 var cmd_hincrby = "HINCRBY"
+var cmd_incrby = "INCRBY"
+var cmd_incrbyfloat = "INCRBYFLOAT"
 
 //
 // Factory Methods:
@@ -113,6 +115,30 @@ func MakeRedisBatchCommandSet(key string, value []byte) *RedisBatchCommand {
 	return output
 }
 
+// INCRBY <KEY> <AMOUNT> ....
+func MakeRedisBatchCommandIncrementBy(key string, delta int64) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_incrby,
+		args:  make([][]byte, 1)[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
+	output.WriteIntArg(delta)
+	return output
+}
+
+// INCRBYFLOAT <KEY> <AMOUNT> ....
+func MakeRedisBatchCommandIncrementByFloat(key string, delta float64) *RedisBatchCommand {
+	output := &RedisBatchCommand{
+		cmd:   cmd_incrbyfloat,
+		args:  make([][]byte, 1)[0:0],
+		reply: nil,
+	}
+	output.WriteStringArg(key)
+	output.WriteFloatArg(delta)
+	return output
+}
+
 // DEL <KEY> <KEY> <KEY> ....
 func MakeRedisBatchCommandDelete(keys ...string) *RedisBatchCommand {
 	output := &RedisBatchCommand{
@@ -173,7 +199,7 @@ func MakeRedisBatchCommandHashSet(key, field string, value []byte) *RedisBatchCo
 	return output
 }
 
-// HDEL <KEY> <KEY> <KEY> ....
+// HDEL <KEY> <FIELD> <FIELD> ....
 func MakeRedisBatchCommandHashDelete(key string, fields ...string) *RedisBatchCommand {
 	output := &RedisBatchCommand{
 		cmd:   cmd_hdel,
@@ -185,7 +211,7 @@ func MakeRedisBatchCommandHashDelete(key string, fields ...string) *RedisBatchCo
 	return output
 }
 
-// HDEL <KEY> <KEY> <KEY> ....
+// HINCRBY <KEY> <FIELD> <AMOUNT> ....
 func MakeRedisBatchCommandHashIncrementBy(key, field string, delta int64) *RedisBatchCommand {
 	output := &RedisBatchCommand{
 		cmd:   cmd_hincrby,
