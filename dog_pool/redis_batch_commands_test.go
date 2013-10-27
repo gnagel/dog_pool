@@ -235,6 +235,48 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == "OK")
 	})
 
+	c.Specify("[RedisBatchCommands] IncrementBy value", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
+
+		var commands RedisBatchCommands
+		commands = make([]*RedisBatchCommand, 1)
+		commands[0] = MakeRedisBatchCommandIncrementBy("Bob", 123)
+
+		err = commands.ExecuteBatch(server.Connection())
+		c.Expect(err, gospec.Equals, nil)
+
+		// Returns the new value
+		ok, _ := commands[0].Reply().Int()
+		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == 123)
+	})
+
+	c.Specify("[RedisBatchCommands] IncrementByFloat value", func() {
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		server, err := StartRedisServer(&logger)
+		if nil != err {
+			panic(err)
+		}
+		defer server.Close()
+		c.Expect(server.Connection().IsClosed(), gospec.Equals, true)
+
+		var commands RedisBatchCommands
+		commands = make([]*RedisBatchCommand, 1)
+		commands[0] = MakeRedisBatchCommandIncrementByFloat("Bob", 123.456)
+
+		err = commands.ExecuteBatch(server.Connection())
+		c.Expect(err, gospec.Equals, nil)
+
+		// Returns the new value
+		ok, _ := commands[0].Reply().Float64()
+		c.Expect(commands[0].Reply(), gospec.Satisfies, ok == 123.456)
+	})
+
 	c.Specify("[RedisBatchCommands] Hash Value Exists", func() {
 		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		server, err := StartRedisServer(&logger)

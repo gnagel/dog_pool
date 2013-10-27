@@ -135,6 +135,24 @@ func RedisBatchCommandFactorySpecs(c gospec.Context) {
 		c.Expect(value.GetArgs()[1], gospec.Equals, "Bob")
 	})
 
+	c.Specify("[MakeRedisBatchCommand][IncrementBy] Makes command", func() {
+		value := MakeRedisBatchCommandIncrementBy("A", 123)
+		c.Expect(value, gospec.Satisfies, nil != value)
+		c.Expect(value.GetCmd(), gospec.Equals, "INCRBY")
+		c.Expect(len(value.GetArgs()), gospec.Equals, 2)
+		c.Expect(value.GetArgs()[0], gospec.Equals, "A")
+		c.Expect(value.GetArgs()[1], gospec.Equals, "123")
+	})
+
+	c.Specify("[MakeRedisBatchCommand][IncrementByFloat] Makes command", func() {
+		value := MakeRedisBatchCommandIncrementByFloat("A", 123.456)
+		c.Expect(value, gospec.Satisfies, nil != value)
+		c.Expect(value.GetCmd(), gospec.Equals, "INCRBYFLOAT")
+		c.Expect(len(value.GetArgs()), gospec.Equals, 2)
+		c.Expect(value.GetArgs()[0], gospec.Equals, "A")
+		c.Expect(value.GetArgs()[1], gospec.Equals, "123.456000")
+	})
+
 	c.Specify("[MakeRedisBatchCommand][Hash Delete] Makes command", func() {
 		value := MakeRedisBatchCommandHashDelete("A", "B", "C")
 		c.Expect(value, gospec.Satisfies, nil != value)
