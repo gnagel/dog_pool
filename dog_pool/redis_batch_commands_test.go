@@ -87,6 +87,12 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 			MakeRedisBatchCommandExpireIn("Bob", time.Duration(1)*time.Second),
 			// Expects ~1s
 			MakeRedisBatchCommandGetExpiresIn("Bob"),
+			// Clear the TTL
+			MakeRedisBatchCommandPersist("Bob"),
+			// Expects -1
+			MakeRedisBatchCommandGetExpiresIn("Bob"),
+			// Set the TTL again, and use a Sleep below to test the expiration
+			MakeRedisBatchCommandExpireIn("Bob", time.Duration(1)*time.Second),
 		}
 
 		err = commands.ExecuteBatch(server.Connection())
@@ -111,6 +117,12 @@ func RedisBatchCommandsSpecs(c gospec.Context) {
 		// Expects ~1s
 		ttl, _ = commands[4].Reply().Int()
 		c.Expect(commands[4].Reply(), gospec.Satisfies, ttl == 1)
+
+		// Expects 1, for TTL removed
+		ttl, _ = commands[5].Reply().Int()
+		c.Expect(commands[5].Reply(), gospec.Satisfies, ttl == 1)
+		ttl, _ = commands[6].Reply().Int()
+		c.Expect(commands[6].Reply(), gospec.Satisfies, ttl == -1)
 
 		// Sleep for 1.5 seconds
 		time.Sleep(time.Duration(1500) * time.Millisecond)
