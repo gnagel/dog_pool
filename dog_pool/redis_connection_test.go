@@ -72,7 +72,7 @@ func RedisConnectionSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[RedisConnection][KeysExist] Checks if keys exists", func() {
-		logger := log4go.NewDefaultLogger(log4go.FINEST)
+		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
 		server, server_err := StartRedisServer(&logger)
 		if nil != server_err {
 			panic(server_err)
