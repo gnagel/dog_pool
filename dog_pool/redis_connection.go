@@ -187,17 +187,50 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 			p.Close()
 		}
 	} else {
-		// Log the response
-		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply, Cmd=%v, Reply=%#v", p.Url, p.Id, first_cmd, reply)
-		if reply.Type == redis.MultiReply {
-			for i, elem := range reply.Elems {
-				p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply, Cmd=%v, Reply[%d]=%#v", p.Url, p.Id, first_cmd, i, elem)
-			}
-		}
+		p.logReply(first_cmd, "root", reply)
 	}
 
 	// Return the reply from redis to the caller
 	return reply
+}
+
+func (p *RedisConnection) logReply(cmd, reply_depth string, reply *redis.Reply) {
+	// Log the response
+	switch reply.Type {
+	case redis.StatusReply:
+		b, _ := reply.Bool()
+		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply[%v], Cmd=%v, Reply.Type=StatusReply, Reply.Status=%v", p.Url, p.Id, reply_depth, cmd, b)
+		return
+
+	case redis.ErrorReply:
+		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply[%v], Cmd=%v, Reply.Type=ErrorReply, Reply.Err=%v", p.Url, p.Id, reply_depth, cmd, reply.Err)
+		return
+
+	case redis.IntegerReply:
+		i, _ := reply.Int64()
+		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply[%v], Cmd=%v, Reply.Type=IntegerReply, Reply.Int=%v", p.Url, p.Id, reply_depth, cmd, i)
+		return
+
+	case redis.NilReply:
+		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply[%v], Cmd=%v, Reply.Type=NilReply", p.Url, p.Id, reply_depth, cmd)
+		return
+
+	case redis.BulkReply:
+		b, _ := reply.Bytes()
+		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply[%v], Cmd=%v, Reply.Type=BulkReply, Reply.Str=%v, Reply.Bytes=%v", p.Url, p.Id, reply_depth, cmd, string(b), b)
+		return
+
+	case redis.MultiReply:
+		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply[%v], Cmd=%v, Reply.Type=MultiReply, Reply.Elems.Count=%v", p.Url, p.Id, reply_depth, cmd, len(reply.Elems))
+		for i, elem := range reply.Elems {
+			p.logReply(cmd, fmt.Sprintf("%s->%d", reply_depth, i), elem)
+		}
+		return
+
+	default:
+		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply[%v], Cmd=%v, Reply=%#v", p.Url, p.Id, reply_depth, cmd, reply)
+		return
+	}
 }
 
 //
