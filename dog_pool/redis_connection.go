@@ -189,6 +189,11 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 	} else {
 		// Log the response
 		p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply, Cmd=%v, Reply=%#v", p.Url, p.Id, first_cmd, reply)
+		if reply.Type == redis.MultiReply {
+			for i, elem := range reply.Elems {
+				p.Logger.Info("[RedisConnection][GetReply][%s/%s] Redis Reply, Cmd=%v, Reply[%d]=%#v", p.Url, p.Id, first_cmd, i, elem)
+			}
+		}
 	}
 
 	// Return the reply from redis to the caller
