@@ -28,6 +28,8 @@ type RedisConnection struct {
 	client *redis.Client "Connection to a Redis, may be nil"
 
 	cmd_queue []string
+
+	log_level log4go.Level
 }
 
 func (p *RedisConnection) String() string {
@@ -94,7 +96,9 @@ func (p *RedisConnection) Close() (err error) {
 	p.client = nil
 
 	// Log the event
-	p.Logger.Info("[RedisConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
+	if p.log_level <= log4go.INFO {
+		p.Logger.Info("[RedisConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
+	}
 
 	return
 }
@@ -118,11 +122,16 @@ func (p *RedisConnection) Cmd(cmd string, args ...interface{}) *redis.Reply {
 // Use GetReply() to read the reply.
 //
 func (p *RedisConnection) Append(cmd string, args ...interface{}) {
-	last_cmd := string(formatArgs(cmd, args))
-	p.cmd_queue = append(p.cmd_queue, last_cmd)
+	var last_cmd string
+	if p.log_level <= log4go.INFO {
+		last_cmd := string(formatArgs(cmd, args))
+		p.cmd_queue = append(p.cmd_queue, last_cmd)
+	}
 
 	// Wrap in a lambda to prevent evaulation, unless logging is enabled ...
-	p.Logger.Trace("[RedisConnection][Append][%s/%s] Redis Command = '%s'", p.Url, p.Id, last_cmd)
+	if p.log_level <= log4go.TRACE {
+		p.Logger.Trace("[RedisConnection][Append][%s/%s] Redis Command = '%s'", p.Url, p.Id, last_cmd)
+	}
 
 	// If the connection is not open, then open it
 	if !p.IsOpen() {
@@ -195,6 +204,10 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 }
 
 func (p *RedisConnection) logReply(cmd, reply_depth string, reply *redis.Reply) {
+	if p.log_level >= log4go.INFO {
+		return
+	}
+
 	// Log the response
 	switch reply.Type {
 	case redis.StatusReply:
@@ -376,6 +389,13 @@ func (p *RedisConnection) IsClosed() bool {
 // Open a new connection to redis
 //
 func (p *RedisConnection) Open() error {
+	p.log_level = log4go.CRITICAL
+	for _, filter := range *p.Logger {
+		if filter.Level < p.log_level {
+			p.log_level = filter.Level
+		}
+	}
+
 	// Set the default timeout
 	if time.Duration(0) == p.Timeout {
 		p.Timeout = time.Duration(10) * time.Second
@@ -397,7 +417,9 @@ func (p *RedisConnection) Open() error {
 	p.client = client
 
 	// Log the event
-	p.Logger.Info("[RedisConnection][Open][%s/%s] --> Opened!", p.Url, p.Id)
+	if p.log_level <= log4go.INFO {
+		p.Logger.Info("[RedisConnection][Open][%s/%s] --> Opened!", p.Url, p.Id)
+	}
 
 	// Return nil
 	return nil

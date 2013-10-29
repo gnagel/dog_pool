@@ -140,7 +140,7 @@ func RedisConnectionSpecs(c gospec.Context) {
 	})
 
 	c.Specify("[RedisConnection] Ping (-->Cmd-->Append+GetReply) (re-)opens the connection automatically", func() {
-		logger := log4go.NewDefaultLogger(log4go.CRITICAL)
+		logger := log4go.NewDefaultLogger(log4go.INFO)
 		server, err := StartRedisServer(&logger)
 		if nil != err {
 			panic(err)
