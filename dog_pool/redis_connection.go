@@ -28,12 +28,20 @@ type RedisConnection struct {
 	client *redis.Client "Connection to a Redis, may be nil"
 
 	cmd_queue []string
-
-	log_level log4go.Level
 }
 
 func (p *RedisConnection) String() string {
 	return fmt.Sprintf("RedisConnection { Id=%v, Url=%v, Timeout=%v }", p.Id, p.Url, p.Timeout)
+}
+
+func minLogLevel(logger *log4go.Logger) log4go.Level {
+	log_level := log4go.CRITICAL
+	for _, filter := range *logger {
+		if log_level > filter.Level {
+			log_level = filter.Level
+		}
+	}
+	return log_level
 }
 
 //
@@ -96,7 +104,7 @@ func (p *RedisConnection) Close() (err error) {
 	p.client = nil
 
 	// Log the event
-	if p.log_level <= log4go.INFO {
+	if log4go.INFO >= minLogLevel(p.Logger) {
 		p.Logger.Info("[RedisConnection][Close][%s/%s] --> Closed!", p.Url, p.Id)
 	}
 
@@ -123,13 +131,13 @@ func (p *RedisConnection) Cmd(cmd string, args ...interface{}) *redis.Reply {
 //
 func (p *RedisConnection) Append(cmd string, args ...interface{}) {
 	var last_cmd string
-	if p.log_level <= log4go.INFO {
+	if log4go.INFO >= minLogLevel(p.Logger) {
 		last_cmd := string(formatArgs(cmd, args))
 		p.cmd_queue = append(p.cmd_queue, last_cmd)
 	}
 
 	// Wrap in a lambda to prevent evaulation, unless logging is enabled ...
-	if p.log_level <= log4go.TRACE {
+	if log4go.TRACE >= minLogLevel(p.Logger) {
 		p.Logger.Trace("[RedisConnection][Append][%s/%s] Redis Command = '%s'", p.Url, p.Id, last_cmd)
 	}
 
@@ -204,7 +212,7 @@ func (p *RedisConnection) GetReply() *redis.Reply {
 }
 
 func (p *RedisConnection) logReply(cmd, reply_depth string, reply *redis.Reply) {
-	if p.log_level >= log4go.INFO {
+	if log4go.INFO < minLogLevel(p.Logger) {
 		return
 	}
 
@@ -389,13 +397,6 @@ func (p *RedisConnection) IsClosed() bool {
 // Open a new connection to redis
 //
 func (p *RedisConnection) Open() error {
-	p.log_level = log4go.CRITICAL
-	for _, filter := range *p.Logger {
-		if filter.Level < p.log_level {
-			p.log_level = filter.Level
-		}
-	}
-
 	// Set the default timeout
 	if time.Duration(0) == p.Timeout {
 		p.Timeout = time.Duration(10) * time.Second
@@ -417,7 +418,7 @@ func (p *RedisConnection) Open() error {
 	p.client = client
 
 	// Log the event
-	if p.log_level <= log4go.INFO {
+	if log4go.INFO >= minLogLevel(p.Logger) {
 		p.Logger.Info("[RedisConnection][Open][%s/%s] --> Opened!", p.Url, p.Id)
 	}
 
